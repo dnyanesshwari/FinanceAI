@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #eef1f7;
+      --card: #ffffff;
+      --chat-bg: linear-gradient(135deg, #3b7cf4 0%, #6b4ef4 100%);
+      --text-dark: #111827;
+      --text-mid: #4b5563;
+      --text-light: #9ca3af;
+      --accent: #3b7cf4;
+      --accent-hover: #2563eb;
+      --border: #e5e9f2;
+      --danger: #ef4444;
+      --success: #10b981;
+      --sidebar-w: 200px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    /* ── MODALS ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+      z-index: 200; align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: #fff; border-radius: 20px; padding: 36px 32px;
+      width: 100%; max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      animation: popIn 0.2s ease;
+    }
+    @keyframes popIn {
+      from { opacity:0; transform:scale(0.95) translateY(8px); }
+      to   { opacity:1; transform:scale(1) translateY(0); }
+    }
+    .modal h2 { font-size:20px; font-weight:700; color:var(--text-dark); margin-bottom:6px; }
+    .modal p  { font-size:13px; color:var(--text-light); margin-bottom:24px; }
+    .modal label { font-size:12px; font-weight:600; color:var(--text-mid); display:block; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.5px; }
+    .modal input {
+      width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px;
+      font-family:inherit; font-size:14px; color:var(--text-dark); outline:none; margin-bottom:16px; transition:border-color 0.15s;
+    }
+    .modal input:focus { border-color:var(--accent); }
+    .modal-actions { display:flex; gap:10px; margin-top:4px; }
+    .modal-msg { font-size:12.5px; padding:8px 12px; border-radius:8px; margin-bottom:14px; display:none; }
+    .modal-msg.error   { background:#fef2f2; color:var(--danger); display:block; }
+    .modal-msg.success { background:#ecfdf5; color:var(--success); display:block; }
+
+    /* Tool modal inputs */
+    .tool-modal h2 { margin-bottom:4px; }
+    .tool-modal .subtitle { font-size:13px; color:var(--text-light); margin-bottom:20px; }
+    .tool-result {
+      background:#f0f5ff; border-radius:10px; padding:14px 16px;
+      font-size:15px; font-weight:600; color:var(--accent);
+      margin-top:4px; display:none; text-align:center;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding:8px 20px; border-radius:10px;
+      font-family:inherit; font-size:13px; font-weight:600;
+      cursor:pointer; transition:all 0.15s ease; border:none;
+    }
+    .btn-primary { background:var(--accent); color:#fff; }
+    .btn-primary:hover { background:var(--accent-hover); }
+    .btn-outline { background:transparent; color:var(--text-dark); border:1.5px solid var(--border); }
+    .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+    .btn-danger { background:#fef2f2; color:var(--danger); border:1.5px solid #fecaca; }
+    .btn-danger:hover { background:#fee2e2; }
+    .btn-sm { padding:6px 14px; font-size:12px; }
+
+    /* ── MAIN CARD ── */
+    .card {
+      background:var(--card); border-radius:24px;
+      box-shadow:0 4px 32px rgba(59,124,244,0.10);
+      width:100%; max-width:900px;
+      overflow:hidden; display:flex; flex-direction:column;
+    }
+
+    /* Header */
+    .header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:18px 24px; border-bottom:1px solid var(--border);
+    }
+    .logo { font-size:18px; font-weight:700; letter-spacing:-0.3px; color:var(--text-dark); }
+    .header-right { display:flex; align-items:center; gap:10px; }
+    .user-pill {
+      font-size:12.5px; font-weight:600; color:var(--accent);
+      background:#eef4ff; padding:6px 12px; border-radius:20px; display:none;
+    }
+
+    /* ── BODY: sidebar + chat ── */
+    .body-row {
+      display:flex; flex:1; min-height:0;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width:var(--sidebar-w); flex-shrink:0;
+      border-right:1px solid var(--border);
+      display:flex; flex-direction:column;
+      padding:20px 14px; gap:8px;
+      background:#fafbfd;
+    }
+    .sidebar-label {
+      font-size:11px; font-weight:700; letter-spacing:0.8px;
+      text-transform:uppercase; color:var(--text-light);
+      padding:0 6px; margin-bottom:4px;
+    }
+    .tool-btn {
+      width:100%; padding:10px 12px;
+      border:1.5px solid var(--border); border-radius:12px;
+      background:#fff; font-family:inherit; font-size:12.5px;
+      font-weight:500; color:var(--text-mid); cursor:pointer;
+      transition:all 0.15s; text-align:left; line-height:1.4;
+    }
+    .tool-btn:hover { border-color:var(--accent); color:var(--accent); background:#f0f5ff; }
+    .tool-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .tool-btn .tool-icon { font-size:16px; display:block; margin-bottom:3px; }
+
+    .sidebar-spacer { flex:1; }
+
+    .history-btn {
+      width:100%; padding:11px 14px;
+      background:var(--accent); color:#fff;
+      border:none; border-radius:12px;
+      font-family:inherit; font-size:13px; font-weight:600;
+      cursor:pointer; transition:background 0.15s;
+      display:flex; align-items:center; justify-content:center; gap:7px;
+    }
+    .history-btn:hover { background:var(--accent-hover); }
+    .history-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+    /* ── CHAT PANEL ── */
+    .chat-panel {
+      flex:1; display:flex; flex-direction:column; min-width:0;
+    }
+
+    .auth-wall {
+      flex:1; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:60px 24px; gap:12px;
+      background:var(--chat-bg); text-align:center;
+    }
+    .auth-wall span { font-size:40px; }
+    .auth-wall p { color:rgba(255,255,255,0.85); font-size:15px; line-height:1.6; }
+
+    .chat-area {
+      flex:1; background:var(--chat-bg);
+      padding:24px 20px 16px; display:none; flex-direction:column;
+      gap:14px; overflow-y:auto; max-height:420px; scroll-behavior:smooth;
+    }
+    .chat-area.active { display:flex; }
+    .welcome { color:#fff; font-size:17px; font-weight:600; line-height:1.5; margin-bottom:4px; }
+
+    .bubble-row {
+      display:flex; align-items:flex-end; gap:10px;
+      animation:fadeUp 0.25s ease;
+    }
+    .bubble-row.user { justify-content:flex-start; }
+    .bubble-row.ai   { justify-content:flex-end; }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .avatar {
+      width:32px; height:32px; border-radius:50%; background:#cdd5e8;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; font-size:15px;
+    }
+    .ai .avatar { background:linear-gradient(135deg,#6b4ef4,#3b7cf4); }
+    .bubble {
+      background:#fff; color:var(--text-dark);
+      padding:11px 15px; border-radius:14px;
+      font-size:13.5px; line-height:1.6; max-width:75%;
+      box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    }
+    .ai .bubble { background:rgba(255,255,255,0.9); }
+    .meta { font-size:10px; color:rgba(255,255,255,0.5); margin-top:3px; text-align:right; padding-right:4px; }
+
+    .typing { display:flex; gap:5px; padding:12px 15px; }
+    .typing span {
+      width:7px; height:7px; background:var(--text-mid);
+      border-radius:50%; animation:bounce 1.2s infinite;
+    }
+    .typing span:nth-child(2) { animation-delay:0.2s; }
+    .typing span:nth-child(3) { animation-delay:0.4s; }
+    @keyframes bounce {
+      0%,80%,100% { transform:translateY(0); opacity:.4; }
+      40%          { transform:translateY(-6px); opacity:1; }
+    }
+
+    /* Input bar */
+    .input-bar {
+      padding:14px 18px; border-top:1px solid var(--border);
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .quick-btns { display:flex; gap:7px; flex-wrap:wrap; }
+    .quick-btn {
+      padding:6px 13px; border:1.5px solid var(--border);
+      border-radius:20px; background:transparent;
+      font-family:inherit; font-size:12.5px; color:var(--text-mid);
+      cursor:pointer; transition:all 0.15s; font-weight:500;
+    }
+    .quick-btn:hover { border-color:var(--accent); color:var(--accent); background:#f0f5ff; }
+    .quick-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+    .input-row { display:flex; gap:10px; align-items:center; }
+    .input-row input {
+      flex:1; padding:11px 15px;
+      border:1.5px solid var(--border); border-radius:12px;
+      font-family:inherit; font-size:14px; color:var(--text-dark);
+      outline:none; transition:border-color 0.15s; background:#f9fafb;
+    }
+    .input-row input:focus { border-color:var(--accent); background:#fff; }
+    .input-row input::placeholder { color:var(--text-light); }
+    .input-row input:disabled { opacity:0.5; }
+
+    .send-btn {
+      width:40px; height:40px; border-radius:11px;
+      background:var(--accent); border:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:background 0.15s; flex-shrink:0;
+    }
+    .send-btn:hover { background:var(--accent-hover); }
+    .send-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .send-btn svg { stroke:#fff; }
+
+    .status-bar { font-size:12px; color:var(--danger); min-height:15px; }
+    .status-bar.ok { color:var(--success); }
+
+    /* History panel inside chat */
+    .history-panel {
+      flex:1; background:#f9fafb;
+      padding:20px; display:none; flex-direction:column; gap:12px;
+      overflow-y:auto; max-height:420px;
+    }
+    .history-panel.active { display:flex; }
+    .history-panel h3 { font-size:15px; font-weight:700; color:var(--text-dark); margin-bottom:4px; }
+    .history-item {
+      background:#fff; border-radius:12px; padding:12px 14px;
+      border:1px solid var(--border); display:flex; flex-direction:column; gap:5px;
+    }
+    .history-q { font-size:13px; font-weight:600; color:var(--text-dark); }
+    .history-a { font-size:12.5px; color:var(--text-mid); line-height:1.5; }
+    .history-empty { font-size:13px; color:var(--text-light); text-align:center; padding:40px 0; }
+
+    .back-btn {
+      background:none; border:none; cursor:pointer;
+      font-family:inherit; font-size:13px; font-weight:600;
+      color:var(--accent); padding:0; display:flex; align-items:center; gap:5px;
+    }
+    .back-btn:hover { color:var(--accent-hover); }
+
+    .history-header {
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .clear-history-btn {
+      padding:6px 13px; border-radius:8px;
+      background:#fef2f2; color:var(--danger);
+      border:1.5px solid #fecaca;
+      font-family:inherit; font-size:12px; font-weight:600;
+      cursor:pointer; transition:all 0.15s;
+      display:flex; align-items:center; gap:4px;
+    }
+    .clear-history-btn:hover { background:#fee2e2; }
+    .clear-history-btn:disabled { opacity:0.4; cursor:not-allowed; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <h2>Welcome back</h2>
+    <p>Login to your Finance AI account</p>
+    <div class="modal-msg" id="loginMsg"></div>
+    <label>Username</label>
+    <input type="text" id="loginUsername" placeholder="your_username" autocomplete="username" />
+    <label>Password</label>
+    <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter') submitLogin()" />
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1" onclick="submitLogin()">Login</button>
+      <button class="btn btn-outline" onclick="closeModal('loginModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIGNUP MODAL -->
+<div class="modal-overlay" id="signupModal">
+  <div class="modal">
+    <h2>Create account</h2>
+    <p>Get started with Finance AI for free</p>
+    <div class="modal-msg" id="signupMsg"></div>
+    <label>Username</label>
+    <input type="text" id="signupUsername" placeholder="choose_a_username" autocomplete="username" />
+    <label>Password</label>
+    <input type="password" id="signupPassword" placeholder="••••••••" autocomplete="new-password"
+           onkeydown="if(event.key==='Enter') submitSignup()" />
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1" onclick="submitSignup()">Create Account</button>
+      <button class="btn btn-outline" onclick="closeModal('signupModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMI MODAL -->
+<div class="modal-overlay" id="emiModal">
+  <div class="modal tool-modal">
+    <h2>📊 EMI Calculator</h2>
+    <p class="subtitle">Equated Monthly Instalment</p>
+    <div class="modal-msg" id="emiMsg"></div>
+    <label>Principal (₹)</label>
+    <input type="number" id="emiPrincipal" placeholder="e.g. 500000" />
+    <label>Annual Interest Rate (%)</label>
+    <input type="number" id="emiRate" placeholder="e.g. 8.5" step="0.1" />
+    <label>Tenure (Years)</label>
+    <input type="number" id="emiTime" placeholder="e.g. 5" />
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1" onclick="submitTool('emi')">Calculate</button>
+      <button class="btn btn-outline" onclick="closeModal('emiModal')">Close</button>
+    </div>
+    <div class="tool-result" id="emiResult"></div>
+  </div>
+</div>
+
+<!-- SIMPLE INTEREST MODAL -->
+<div class="modal-overlay" id="siModal">
+  <div class="modal tool-modal">
+    <h2>💰 Simple Interest</h2>
+    <p class="subtitle">Principal × Rate × Time / 100</p>
+    <div class="modal-msg" id="siMsg"></div>
+    <label>Principal (₹)</label>
+    <input type="number" id="siPrincipal" placeholder="e.g. 100000" />
+    <label>Annual Rate (%)</label>
+    <input type="number" id="siRate" placeholder="e.g. 7" step="0.1" />
+    <label>Time (Years)</label>
+    <input type="number" id="siTime" placeholder="e.g. 3" />
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1" onclick="submitTool('si')">Calculate</button>
+      <button class="btn btn-outline" onclick="closeModal('siModal')">Close</button>
+    </div>
+    <div class="tool-result" id="siResult"></div>
+  </div>
+</div>
+
+<!-- COMPOUND INTEREST MODAL -->
+<div class="modal-overlay" id="ciModal">
+  <div class="modal tool-modal">
+    <h2>📈 Compound Interest</h2>
+    <p class="subtitle">Growth on principal + accumulated interest</p>
+    <div class="modal-msg" id="ciMsg"></div>
+    <label>Principal (₹)</label>
+    <input type="number" id="ciPrincipal" placeholder="e.g. 100000" />
+    <label>Annual Rate (%)</label>
+    <input type="number" id="ciRate" placeholder="e.g. 10" step="0.1" />
+    <label>Time (Years)</label>
+    <input type="number" id="ciTime" placeholder="e.g. 5" />
+    <div class="modal-actions">
+      <button class="btn btn-primary" style="flex:1" onclick="submitTool('ci')">Calculate</button>
+      <button class="btn btn-outline" onclick="closeModal('ciModal')">Close</button>
+    </div>
+    <div class="tool-result" id="ciResult"></div>
+  </div>
+</div>
+
+<!-- MAIN CARD -->
+<div class="card">
+
+  <!-- Header -->
+  <div class="header">
+    <span class="logo">FINANCE AI</span>
+    <div class="header-right">
+      <span class="user-pill" id="userPill"></span>
+      <button class="btn btn-primary btn-sm" id="loginBtn" onclick="openModal('loginModal')">Login</button>
+      <button class="btn btn-outline btn-sm" id="signupBtn" onclick="openModal('signupModal')">Sign Up</button>
+      <button class="btn btn-danger btn-sm" id="logoutBtn" style="display:none" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="body-row">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-label">Tools</div>
+
+      <button class="tool-btn" id="toolEmi" onclick="openModal('emiModal')" disabled>
+        <span class="tool-icon">📊</span>EMI Calculator
+      </button>
+      <button class="tool-btn" id="toolSi" onclick="openModal('siModal')" disabled>
+        <span class="tool-icon">💰</span>Simple Interest
+      </button>
+      <button class="tool-btn" id="toolCi" onclick="openModal('ciModal')" disabled>
+        <span class="tool-icon">📈</span>Compound Interest
+      </button>
+
+      <div class="sidebar-spacer"></div>
+
+      <button class="history-btn" id="historyBtn" onclick="toggleHistory()" disabled>
+        🕘 Chat History
+      </button>
+    </div>
+
+    <!-- Chat panel -->
+    <div class="chat-panel">
+
+      <!-- Auth wall -->
+      <div class="auth-wall" id="authWall">
+        <span>🔐</span>
+        <p>Please <strong>login</strong> or <strong>sign up</strong><br>to start chatting with Finance AI.</p>
+      </div>
+
+      <!-- Chat -->
+      <div class="chat-area" id="chatArea">
+        <p class="welcome">Hello! I'm Finance AI, your intelligent financial assistant. How can I help you today?</p>
+      </div>
+
+      <!-- History panel -->
+      <div class="history-panel" id="historyPanel">
+        <div class="history-header">
+          <button class="back-btn" onclick="toggleHistory()">← Back to Chat</button>
+          <button class="clear-history-btn" id="clearHistoryBtn" onclick="clearHistory()">🗑 Clear History</button>
+        </div>
+        <h3>Chat History</h3>
+        <div id="historyList"></div>
+      </div>
+
+      <!-- Input bar -->
+      <div class="input-bar">
+        <div class="quick-btns">
+          <button class="quick-btn" onclick="sendQuick('Budgeting Tips')">Budgeting Tips</button>
+          <button class="quick-btn" onclick="sendQuick('Market Trends')">Market Trends</button>
+          <button class="quick-btn" onclick="sendQuick('Retirement Planning')">Retirement Planning</button>
+          <button class="quick-btn" onclick="sendQuick('Investment Strategies')">Investment Strategies</button>
+        </div>
+        <div class="input-row">
+          <input type="text" id="userInput" placeholder="Login to start asking questions..." disabled
+                 onkeydown="if(event.key==='Enter') sendMessage()" />
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled title="Send">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+        <div class="status-bar" id="statusBar"></div>
+      </div>
+
+    </div><!-- /chat-panel -->
+  </div><!-- /body-row -->
+</div><!-- /card -->
+
+<script src="config.js"></script>
+<script>
+  // ── State ──
+  let token = localStorage.getItem('finance_token') || null;
+  let currentUser = localStorage.getItem('finance_user') || null;
+  let showingHistory = false;
+
+  // ── DOM refs ──
+  const chatArea   = document.getElementById('chatArea');
+  const authWall   = document.getElementById('authWall');
+  const histPanel  = document.getElementById('historyPanel');
+  const userPill   = document.getElementById('userPill');
+  const loginBtn   = document.getElementById('loginBtn');
+  const signupBtn  = document.getElementById('signupBtn');
+  const logoutBtn  = document.getElementById('logoutBtn');
+  const userInput  = document.getElementById('userInput');
+  const sendBtn    = document.getElementById('sendBtn');
+  const statusBar  = document.getElementById('statusBar');
+  const historyBtn = document.getElementById('historyBtn');
+
+  // ── Auth state ──
+  function renderAuthState() {
+    const loggedIn = !!token;
+    authWall.style.display = loggedIn ? 'none' : 'flex';
+    chatArea.classList.toggle('active', loggedIn && !showingHistory);
+    histPanel.classList.toggle('active', loggedIn && showingHistory);
+
+    userPill.style.display  = loggedIn ? 'inline-block' : 'none';
+    userPill.textContent    = loggedIn ? '👤 ' + currentUser : '';
+    loginBtn.style.display  = loggedIn ? 'none' : 'inline-block';
+    signupBtn.style.display = loggedIn ? 'none' : 'inline-block';
+    logoutBtn.style.display = loggedIn ? 'inline-block' : 'none';
+
+    userInput.disabled    = !loggedIn;
+    sendBtn.disabled      = !loggedIn;
+    historyBtn.disabled   = !loggedIn;
+    userInput.placeholder = loggedIn ? 'Ask me anything about finance...' : 'Login to start asking questions...';
+
+    document.querySelectorAll('.quick-btn, .tool-btn').forEach(b => b.disabled = !loggedIn);
+  }
+
+  // ── Modal helpers ──
+  function openModal(id) { document.getElementById(id).classList.add('active'); }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+    // clear messages & results
+    const msgMap = { loginModal:'loginMsg', signupModal:'signupMsg', emiModal:'emiMsg', siModal:'siMsg', ciModal:'ciMsg' };
+    const resMap = { emiModal:'emiResult', siModal:'siResult', ciModal:'ciResult' };
+    if (msgMap[id]) { const e = document.getElementById(msgMap[id]); e.className='modal-msg'; e.textContent=''; }
+    if (resMap[id]) { const e = document.getElementById(resMap[id]); e.style.display='none'; e.textContent=''; }
+  }
+  function showMsg(elId, text, type) {
+    const el = document.getElementById(elId);
+    el.className = `modal-msg ${type}`; el.textContent = text;
+  }
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
+  });
+
+  // ── Login ──
+  async function submitLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    if (!username || !password) { showMsg('loginMsg', 'Please fill in both fields.', 'error'); return; }
+    showMsg('loginMsg', 'Logging in…', 'success');
+    try {
+      const res = await fetch(`${API_BASE_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ username, password })
+      });
+      const data = await res.json();
+      if (!res.ok) { showMsg('loginMsg', data.detail || 'Login failed.', 'error'); return; }
+      token = data.access_token; currentUser = username;
+      localStorage.setItem('finance_token', token);
+      localStorage.setItem('finance_user', username);
+      closeModal('loginModal');
+      renderAuthState();
+      setStatus('Logged in as ' + username, true);
+    } catch { showMsg('loginMsg', 'Server unreachable. Check config.js.', 'error'); }
+  }
+
+  // ── Signup ──
+  async function submitSignup() {
+    const username = document.getElementById('signupUsername').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    if (!username || !password) { showMsg('signupMsg', 'Please fill in both fields.', 'error'); return; }
+    showMsg('signupMsg', 'Creating account…', 'success');
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/signup?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
+        { method: 'POST' }
+      );
+      const data = await res.json();
+      if (!res.ok) { showMsg('signupMsg', data.detail || 'Signup failed.', 'error'); return; }
+      showMsg('signupMsg', '✅ Account created! Redirecting to login…', 'success');
+      setTimeout(() => {
+        closeModal('signupModal');
+        document.getElementById('loginUsername').value = username;
+        openModal('loginModal');
+      }, 1200);
+    } catch { showMsg('signupMsg', 'Server unreachable. Check config.js.', 'error'); }
+  }
+
+  // ── Logout ──
+  function logout() {
+    token = null; currentUser = null; showingHistory = false;
+    localStorage.removeItem('finance_token');
+    localStorage.removeItem('finance_user');
+    renderAuthState(); setStatus('');
+  }
+
+  // ── Finance Tools ──
+  // Maps tool id → { endpoint, inputs, resultKey, label }
+  const toolConfig = {
+    emi: { endpoint: '/tools/emi',               inputs: ['emiPrincipal','emiRate','emiTime'], resultKey: 'emi',      msgEl: 'emiMsg', resultEl: 'emiResult', label: 'EMI' },
+    si:  { endpoint: '/tools/simple-interest',   inputs: ['siPrincipal','siRate','siTime'],   resultKey: 'interest', msgEl: 'siMsg',  resultEl: 'siResult',  label: 'Simple Interest' },
+    ci:  { endpoint: '/tools/compound-interest', inputs: ['ciPrincipal','ciRate','ciTime'],   resultKey: 'interest', msgEl: 'ciMsg',  resultEl: 'ciResult',  label: 'Compound Interest' },
+  };
+
+  async function submitTool(tool) {
+    const cfg = toolConfig[tool];
+    const [p, r, t] = cfg.inputs.map(id => parseFloat(document.getElementById(id).value));
+    if (!p || !r || !t || isNaN(p) || isNaN(r) || isNaN(t)) {
+      showMsg(cfg.msgEl, 'Please fill all fields with valid numbers.', 'error'); return;
+    }
+    showMsg(cfg.msgEl, 'Calculating…', 'success');
+    try {
+      const res = await fetch(`${API_BASE_URL}${cfg.endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ principal: p, rate: r, time: t })
+      });
+      if (res.status === 401) { logout(); return; }
+      const data = await res.json();
+      const val = data[cfg.resultKey];
+      const resultEl = document.getElementById(cfg.resultEl);
+      resultEl.textContent = `${cfg.label}: ₹${Number(val).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+      resultEl.style.display = 'block';
+      // clear msg
+      const msgEl = document.getElementById(cfg.msgEl);
+      msgEl.className = 'modal-msg'; msgEl.textContent = '';
+    } catch { showMsg(cfg.msgEl, 'Server error. Try again.', 'error'); }
+  }
+
+  // ── Chat History ──
+  async function toggleHistory() {
+    if (!token) return;
+    showingHistory = !showingHistory;
+    chatArea.classList.toggle('active', !showingHistory);
+    histPanel.classList.toggle('active', showingHistory);
+
+    if (showingHistory) {
+      historyBtn.textContent = '💬 Back to Chat';
+      document.getElementById('historyList').innerHTML = '<p class="history-empty">Loading…</p>';
+      try {
+        const res = await fetch(`${API_BASE_URL}/history`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.status === 401) { logout(); return; }
+        const data = await res.json();
+        const list = data.history || [];
+        const el = document.getElementById('historyList');
+        if (!list.length) {
+          el.innerHTML = '<p class="history-empty">No history yet. Start a conversation!</p>';
+        } else {
+          el.innerHTML = list.map(item => `
+            <div class="history-item">
+              <div class="history-q">🙋 ${item.query || item.question || item.user || ''}</div>
+              <div class="history-a">🤖 ${item.answer || item.response || item.ai || ''}</div>
+            </div>`).join('');
+        }
+      } catch {
+        document.getElementById('historyList').innerHTML = '<p class="history-empty">Could not load history.</p>';
+      }
+    } else {
+      historyBtn.textContent = '🕘 Chat History';
+    }
+  }
+
+  // ── Clear History ──
+  async function clearHistory() {
+    if (!token) return;
+    const btn = document.getElementById('clearHistoryBtn');
+    btn.disabled = true;
+    btn.textContent = 'Clearing…';
+    try {
+      const res = await fetch(`${API_BASE_URL}/clear-session`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401) { logout(); return; }
+      // Refresh list
+      document.getElementById('historyList').innerHTML = '<p class="history-empty">History cleared successfully.</p>';
+    } catch {
+      document.getElementById('historyList').innerHTML = '<p class="history-empty">Could not clear history. Try again.</p>';
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '🗑 Clear History';
+    }
+  }
+
+  // ── Chat ──
+  function setStatus(msg, ok = false) {
+    statusBar.textContent = msg;
+    statusBar.className = 'status-bar' + (ok ? ' ok' : '');
+  }
+
+  function addBubble(text, role, meta) {
+    const row = document.createElement('div');
+    row.className = `bubble-row ${role}`;
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.textContent = role === 'user' ? '👤' : '🤖';
+    const wrap = document.createElement('div');
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble'; bubble.textContent = text;
+    wrap.appendChild(bubble);
+    if (meta) { const m = document.createElement('div'); m.className='meta'; m.textContent=meta; wrap.appendChild(m); }
+    role === 'user' ? (row.appendChild(avatar), row.appendChild(wrap)) : (row.appendChild(wrap), row.appendChild(avatar));
+    chatArea.appendChild(row);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+
+  function addTyping() {
+    const row = document.createElement('div');
+    row.className = 'bubble-row ai'; row.id = 'typing';
+    row.innerHTML = `<div class="bubble typing"><span></span><span></span><span></span></div><div class="avatar">🤖</div>`;
+    chatArea.appendChild(row);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+  function removeTyping() { document.getElementById('typing')?.remove(); }
+
+  async function sendMessage(text) {
+    if (!token) return;
+    // If history is showing, go back to chat first
+    if (showingHistory) { showingHistory=false; renderAuthState(); historyBtn.textContent='🕘 Chat History'; }
+    const message = (text || userInput.value).trim();
+    if (!message) return;
+    userInput.value = ''; setStatus('');
+    addBubble(message, 'user');
+    addTyping();
+    userInput.disabled = true; sendBtn.disabled = true;
+    try {
+      const res = await fetch(`${API_BASE_URL}/ask`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ query: message })
+      });
+      removeTyping();
+      if (res.status === 401) { logout(); setStatus('Session expired. Please login again.'); return; }
+      const data = await res.json();
+      if (data.error) { setStatus('Error: ' + (data.details || data.error)); return; }
+      const meta = data.intent ? `Intent: ${data.intent}  ·  ${data.response_time}s` : null;
+      addBubble(data.response, 'ai', meta);
+    } catch {
+      removeTyping();
+      setStatus(`⚠ Cannot reach server. Is FastAPI running?`);
+    } finally {
+      userInput.disabled = false; sendBtn.disabled = false; userInput.focus();
+    }
+  }
+
+  function sendQuick(text) { if (token) sendMessage(text); }
+
+  // ── Init ──
+  renderAuthState();
+</script>
+</body>
+</html>

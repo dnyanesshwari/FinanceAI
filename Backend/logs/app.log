@@ -1,0 +1,12 @@
+2026-02-19 11:01:28,404 | INFO | Query received: my salary is 30000 per month, i want to pay emi 30000 in 2 years , how can manage , how much should i invest per month
+2026-02-19 11:03:27,638 | INFO | Intent: planning | Time: 119.23s
+2026-02-19 11:33:00,215 | INFO | Query received: Hiii
+2026-02-19 11:33:51,065 | INFO | Intent: general | Time: 50.85s
+2026-02-19 11:34:10,665 | INFO | Query received: Market Trends
+2026-02-19 11:37:11,705 | INFO | Intent: general | Time: 181.04s
+2026-02-19 23:50:07,225 | INFO | Query received: my salary is 30000rs per month, i have to pay emi 30000 in 2 years , how much should i save from my salary every month
+2026-02-19 23:51:27,906 | INFO | Intent: general | Time: 80.68s
+2026-02-20 14:11:57,020 | INFO | Query received: hii , my salary is 30000rs per month, i have to pay 30000 emi of car in 2 years , how much should i pay to emi company , aslo how much i should invest
+2026-02-20 14:13:48,831 | INFO | Intent: regulation | Time: 111.81s
+2026-02-20 14:14:54,782 | INFO | Query received: my salary is 30000rs , how much should i invest per month to buy 8lakh car
+2026-02-20 14:16:30,789 | INFO | Intent: planning | Time: 96.01s
