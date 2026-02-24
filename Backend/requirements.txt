@@ -1,5 +1,6 @@
 fastapi
 uvicorn
+langchain-community
 langchain
 faiss-cpu
 openai
