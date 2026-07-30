@@ -7,7 +7,11 @@
 
 FinanceAI is a focused financial assistant that routes a question through the right tool instead of treating every request like ordinary chat. Calculate an EMI, ask about regulations, plan a budget, or combine them in one prompt—and see the route used to create the answer.
 
-> **Live deployment:** Managed with [Netlify](https://agent-6a6b440e3bf81a43--clinquant-kringle-78de32.netlify.app/). Add the public `*.netlify.app` URL here when it is available.
+## 🌐 Live Demo
+
+**Frontend:** https://agent-6a6b440e3bf81a43--clinquant-kringle-78de32.netlify.app/
+
+Experience FinanceAI in your browser—ask financial questions, calculate EMIs, explore financial regulations, and interact with the AI-powered assistant without any local setup.
 
 ## Explore
 
