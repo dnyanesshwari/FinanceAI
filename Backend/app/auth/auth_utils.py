@@ -1,24 +1,20 @@
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-from passlib.context import CryptContext
+import bcrypt
 
 SECRET_KEY = "supersecretkey"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=12
-)
-
 def hash_password(password: str):
-    password = password[:72]  # bcrypt limit
-    return pwd_context.hash(password)
+    """Create a bcrypt hash while enforcing bcrypt's 72-byte input limit."""
+    return bcrypt.hashpw(password.encode("utf-8")[:72], bcrypt.gensalt(rounds=12)).decode("utf-8")
 
 def verify_password(plain_password, hashed_password):
-    plain_password = plain_password[:72]
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(
+        plain_password.encode("utf-8")[:72],
+        hashed_password.encode("utf-8"),
+    )
 
 def create_access_token(data: dict):
     to_encode = data.copy()

@@ -1,5 +1,5 @@
 from app.rag.retriever import retrieve
-from app.services.llm_service import get_llm
+from app.services.llm_service import get_llm, invoke_text
 from app.services.intent_service import classify_intent
 from app.services.memory_service import get_memory
 
@@ -32,7 +32,7 @@ Question:
 
 Answer:
 """
-        return llm.invoke(prompt)
+        return invoke_text(llm, prompt)
 
     elif intent == "planning":
         prompt = f"""
@@ -50,7 +50,7 @@ Question:
 
 Answer:
 """
-        return llm.invoke(prompt)
+        return invoke_text(llm, prompt)
 
     else:
         docs = retrieve(query, k=3)
@@ -71,5 +71,5 @@ Question:
 
 Answer:
 """
-        return llm.invoke(prompt)
+        return invoke_text(llm, prompt)
 

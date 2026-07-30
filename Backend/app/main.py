@@ -1,9 +1,10 @@
 import time
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from app.services.query_service import generate_answer
+from app.agent.query_service import generate_answer, generate_answer_debug
 from app.services.intent_service import classify_intent
 from app.services.memory_service import add_to_memory
 from app.utils.logger import logger
@@ -28,12 +29,23 @@ from app.services.memory_service import get_memory
 
 app = FastAPI()
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+FRONTEND_DIR = PROJECT_ROOT / "frontend"
+
+
+@app.get("/health")
+def health_check():
+    """Lightweight readiness check that does not require an LLM request."""
+    return {"status": "ok"}
+
 from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # later restrict
-    allow_credentials=True,
+    # Authentication uses an Authorization header rather than cookies, so
+    # credentials are not needed. This keeps the wildcard origin valid.
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -99,10 +111,30 @@ def ask(request: QueryRequest, current_user: str = Depends(get_current_user)):
             "error": "Something went wrong",
             "details": str(e)
         }
+@app.post("/ask-debug")
+def ask_debug(request: QueryRequest, current_user: str = Depends(get_current_user)):
+    """
+    Same as /ask, but returns the full agent state (which node handled the
+    query, extracted calculator params, retrieved context, etc). Not wired
+    into the frontend - useful for debugging/demoing the agent graph.
+    """
+    trace = generate_answer_debug(request.query, current_user)
+    return {
+        "query": request.query,
+        "used_tool": trace.get("used_tool"),
+        "intent": trace.get("intent"),
+        "calc_type": trace.get("calc_type"),
+        "calc_params": trace.get("calc_params"),
+        "tool_result": trace.get("tool_result"),
+        "context_preview": (trace.get("context") or "")[:300],
+        "final_answer": trace.get("final_answer"),
+    }
+
+
 @app.post("/clear-session")
-def clear_session(session_id: str):
+def clear_session(current_user: str = Depends(get_current_user)):
     from app.services.memory_service import clear_session_memory
-    clear_session_memory(session_id)
+    clear_session_memory(current_user)
     return {"message": "Session cleared"}
 @app.post("/signup")
 def signup(username: str, password: str):
@@ -148,7 +180,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @app.get("/")
 def serve_frontend():
-    return FileResponse("frontend/index.html")   # opening the app in browser
+    return FileResponse(FRONTEND_DIR / "index.html")
 
 @app.post("/tools/emi")
 def emi_tool(data: FinanceRequest, current_user: str = Depends(get_current_user)):
@@ -206,4 +238,4 @@ def get_history(current_user: str = Depends(get_current_user)):
     }
 
 
-app.mount("/", StaticFiles(directory="frontend"), name="frontend")  # serves config.js etc.
+app.mount("/", StaticFiles(directory=FRONTEND_DIR), name="frontend")

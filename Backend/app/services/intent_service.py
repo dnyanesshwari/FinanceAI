@@ -1,4 +1,4 @@
-from app.services.llm_service import get_llm
+from app.services.llm_service import get_llm, invoke_text
 def classify_intent(query: str):
     llm = get_llm()
 
@@ -15,7 +15,7 @@ Return ONLY the category word. No explanation.
 Query: {query}
 """
 
-    response = llm.invoke(prompt).strip().lower()
+    response = invoke_text(llm, prompt).strip().lower()
 
     if "regulation" in response:
         return "regulation"

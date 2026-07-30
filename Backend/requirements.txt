@@ -1,7 +1,16 @@
 fastapi
-uvicorn
+uvicorn[standard]
+slowapi
 langchain
+langchain-community
+langchain-ollama
+langchain-groq
+langgraph
 faiss-cpu
 openai
 python-dotenv
 sentence-transformers
+pydantic
+bcrypt>=4,<5
+python-jose[cryptography]
+python-multipart

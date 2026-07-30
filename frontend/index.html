@@ -1,290 +1,333 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Finance AI</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Finance AI — Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bg: #eef1f7;
-      --card: #ffffff;
-      --chat-bg: linear-gradient(135deg, #3b7cf4 0%, #6b4ef4 100%);
-      --text-dark: #111827;
-      --text-mid: #4b5563;
-      --text-light: #9ca3af;
-      --accent: #3b7cf4;
-      --accent-hover: #2563eb;
-      --border: #e5e9f2;
-      --danger: #ef4444;
-      --success: #10b981;
-      --sidebar-w: 200px;
-    }
+  :root {
+    --bg: #F3F5F8;
+    --surface: #FFFFFF;
+    --surface-2: #F9FAFC;
+    --ink: #10182B;
+    --ink-mid: #4B5875;
+    --ink-faint: #8A93AA;
+    --line: #E1E6EF;
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
+    --gold: #C98A2C;
+    --gold-strong: #A66F1F;
+    --gold-tint: #FBF0DD;
 
-    /* ── MODALS ── */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
-      z-index: 200; align-items: center; justify-content: center;
-    }
-    .modal-overlay.active { display: flex; }
+    --teal: #0F6E5D;
+    --teal-tint: #E3F3EF;
 
-    .modal {
-      background: #fff; border-radius: 20px; padding: 36px 32px;
-      width: 100%; max-width: 380px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-      animation: popIn 0.2s ease;
-    }
-    @keyframes popIn {
-      from { opacity:0; transform:scale(0.95) translateY(8px); }
-      to   { opacity:1; transform:scale(1) translateY(0); }
-    }
-    .modal h2 { font-size:20px; font-weight:700; color:var(--text-dark); margin-bottom:6px; }
-    .modal p  { font-size:13px; color:var(--text-light); margin-bottom:24px; }
-    .modal label { font-size:12px; font-weight:600; color:var(--text-mid); display:block; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.5px; }
-    .modal input {
-      width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:10px;
-      font-family:inherit; font-size:14px; color:var(--text-dark); outline:none; margin-bottom:16px; transition:border-color 0.15s;
-    }
-    .modal input:focus { border-color:var(--accent); }
-    .modal-actions { display:flex; gap:10px; margin-top:4px; }
-    .modal-msg { font-size:12.5px; padding:8px 12px; border-radius:8px; margin-bottom:14px; display:none; }
-    .modal-msg.error   { background:#fef2f2; color:var(--danger); display:block; }
-    .modal-msg.success { background:#ecfdf5; color:var(--success); display:block; }
+    --indigo: #3B4C8C;
+    --indigo-tint: #E9ECF7;
 
-    /* Tool modal inputs */
-    .tool-modal h2 { margin-bottom:4px; }
-    .tool-modal .subtitle { font-size:13px; color:var(--text-light); margin-bottom:20px; }
-    .tool-result {
-      background:#f0f5ff; border-radius:10px; padding:14px 16px;
-      font-size:15px; font-weight:600; color:var(--accent);
-      margin-top:4px; display:none; text-align:center;
-    }
+    --danger: #C1443A;
+    --danger-tint: #FBEAE8;
 
-    /* ── BUTTONS ── */
-    .btn {
-      padding:8px 20px; border-radius:10px;
-      font-family:inherit; font-size:13px; font-weight:600;
-      cursor:pointer; transition:all 0.15s ease; border:none;
-    }
-    .btn-primary { background:var(--accent); color:#fff; }
-    .btn-primary:hover { background:var(--accent-hover); }
-    .btn-outline { background:transparent; color:var(--text-dark); border:1.5px solid var(--border); }
-    .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
-    .btn-danger { background:#fef2f2; color:var(--danger); border:1.5px solid #fecaca; }
-    .btn-danger:hover { background:#fee2e2; }
-    .btn-sm { padding:6px 14px; font-size:12px; }
+    --user-bubble: #10182B;
+    --user-ink: #F3F5F8;
 
-    /* ── MAIN CARD ── */
-    .card {
-      background:var(--card); border-radius:24px;
-      box-shadow:0 4px 32px rgba(59,124,244,0.10);
-      width:100%; max-width:900px;
-      overflow:hidden; display:flex; flex-direction:column;
-    }
+    --shadow: 0 8px 28px rgba(16, 24, 43, 0.08);
+    --radius: 14px;
+  }
 
-    /* Header */
-    .header {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:18px 24px; border-bottom:1px solid var(--border);
-    }
-    .logo { font-size:18px; font-weight:700; letter-spacing:-0.3px; color:var(--text-dark); }
-    .header-right { display:flex; align-items:center; gap:10px; }
-    .user-pill {
-      font-size:12.5px; font-weight:600; color:var(--accent);
-      background:#eef4ff; padding:6px 12px; border-radius:20px; display:none;
-    }
+  html[data-theme="dark"] {
+    --bg: #0B1220;
+    --surface: #121B2E;
+    --surface-2: #0F1728;
+    --ink: #E7EAF1;
+    --ink-mid: #97A2BC;
+    --ink-faint: #5E6A87;
+    --line: #223049;
 
-    /* ── BODY: sidebar + chat ── */
-    .body-row {
-      display:flex; flex:1; min-height:0;
-    }
+    --gold: #E3A63C;
+    --gold-strong: #F0BB5C;
+    --gold-tint: #2B2213;
 
-    /* Sidebar */
-    .sidebar {
-      width:var(--sidebar-w); flex-shrink:0;
-      border-right:1px solid var(--border);
-      display:flex; flex-direction:column;
-      padding:20px 14px; gap:8px;
-      background:#fafbfd;
-    }
-    .sidebar-label {
-      font-size:11px; font-weight:700; letter-spacing:0.8px;
-      text-transform:uppercase; color:var(--text-light);
-      padding:0 6px; margin-bottom:4px;
-    }
-    .tool-btn {
-      width:100%; padding:10px 12px;
-      border:1.5px solid var(--border); border-radius:12px;
-      background:#fff; font-family:inherit; font-size:12.5px;
-      font-weight:500; color:var(--text-mid); cursor:pointer;
-      transition:all 0.15s; text-align:left; line-height:1.4;
-    }
-    .tool-btn:hover { border-color:var(--accent); color:var(--accent); background:#f0f5ff; }
-    .tool-btn:disabled { opacity:0.4; cursor:not-allowed; }
-    .tool-btn .tool-icon { font-size:16px; display:block; margin-bottom:3px; }
+    --teal: #3FCBAE;
+    --teal-tint: #10241F;
 
-    .sidebar-spacer { flex:1; }
+    --indigo: #8B9EEA;
+    --indigo-tint: #171E38;
 
-    .history-btn {
-      width:100%; padding:11px 14px;
-      background:var(--accent); color:#fff;
-      border:none; border-radius:12px;
-      font-family:inherit; font-size:13px; font-weight:600;
-      cursor:pointer; transition:background 0.15s;
-      display:flex; align-items:center; justify-content:center; gap:7px;
-    }
-    .history-btn:hover { background:var(--accent-hover); }
-    .history-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    --danger: #E8776C;
+    --danger-tint: #2A1613;
 
-    /* ── CHAT PANEL ── */
-    .chat-panel {
-      flex:1; display:flex; flex-direction:column; min-width:0;
-    }
+    --user-bubble: #E3A63C;
+    --user-ink: #17120A;
 
-    .auth-wall {
-      flex:1; display:flex; flex-direction:column;
-      align-items:center; justify-content:center;
-      padding:60px 24px; gap:12px;
-      background:var(--chat-bg); text-align:center;
-    }
-    .auth-wall span { font-size:40px; }
-    .auth-wall p { color:rgba(255,255,255,0.85); font-size:15px; line-height:1.6; }
+    --shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  }
 
-    .chat-area {
-      flex:1; background:var(--chat-bg);
-      padding:24px 20px 16px; display:none; flex-direction:column;
-      gap:14px; overflow-y:auto; max-height:420px; scroll-behavior:smooth;
-    }
-    .chat-area.active { display:flex; }
-    .welcome { color:#fff; font-size:17px; font-weight:600; line-height:1.5; margin-bottom:4px; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Public Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    overflow: hidden;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
 
-    .bubble-row {
-      display:flex; align-items:flex-end; gap:10px;
-      animation:fadeUp 0.25s ease;
-    }
-    .bubble-row.user { justify-content:flex-start; }
-    .bubble-row.ai   { justify-content:flex-end; }
-    @keyframes fadeUp {
-      from { opacity:0; transform:translateY(8px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
-    .avatar {
-      width:32px; height:32px; border-radius:50%; background:#cdd5e8;
-      display:flex; align-items:center; justify-content:center;
-      flex-shrink:0; font-size:15px;
-    }
-    .ai .avatar { background:linear-gradient(135deg,#6b4ef4,#3b7cf4); }
-    .bubble {
-      background:#fff; color:var(--text-dark);
-      padding:11px 15px; border-radius:14px;
-      font-size:13.5px; line-height:1.6; max-width:75%;
-      box-shadow:0 2px 8px rgba(0,0,0,0.08);
-    }
-    .ai .bubble { background:rgba(255,255,255,0.9); }
-    .meta { font-size:10px; color:rgba(255,255,255,0.5); margin-top:3px; text-align:right; padding-right:4px; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
 
-    .typing { display:flex; gap:5px; padding:12px 15px; }
-    .typing span {
-      width:7px; height:7px; background:var(--text-mid);
-      border-radius:50%; animation:bounce 1.2s infinite;
-    }
-    .typing span:nth-child(2) { animation-delay:0.2s; }
-    .typing span:nth-child(3) { animation-delay:0.4s; }
-    @keyframes bounce {
-      0%,80%,100% { transform:translateY(0); opacity:.4; }
-      40%          { transform:translateY(-6px); opacity:1; }
-    }
+  /* ── APP SHELL ── */
+  .app-shell { height: 100dvh; display: flex; flex-direction: column; }
 
-    /* Input bar */
-    .input-bar {
-      padding:14px 18px; border-top:1px solid var(--border);
-      display:flex; flex-direction:column; gap:10px;
-    }
-    .quick-btns { display:flex; gap:7px; flex-wrap:wrap; }
-    .quick-btn {
-      padding:6px 13px; border:1.5px solid var(--border);
-      border-radius:20px; background:transparent;
-      font-family:inherit; font-size:12.5px; color:var(--text-mid);
-      cursor:pointer; transition:all 0.15s; font-weight:500;
-    }
-    .quick-btn:hover { border-color:var(--accent); color:var(--accent); background:#f0f5ff; }
-    .quick-btn:disabled { opacity:0.4; cursor:not-allowed; }
+  /* Header */
+  .header {
+    height: 60px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 22px; border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-strong));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif; font-weight: 700; color: #17120A; font-size: 15px;
+  }
+  .brand-name {
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px;
+    letter-spacing: -0.2px; color: var(--ink);
+  }
+  .brand-sub {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--ink-faint);
+    letter-spacing: 0.6px; text-transform: uppercase; margin-left: 4px;
+  }
+  .header-right { display: flex; align-items: center; gap: 10px; }
 
-    .input-row { display:flex; gap:10px; align-items:center; }
-    .input-row input {
-      flex:1; padding:11px 15px;
-      border:1.5px solid var(--border); border-radius:12px;
-      font-family:inherit; font-size:14px; color:var(--text-dark);
-      outline:none; transition:border-color 0.15s; background:#f9fafb;
-    }
-    .input-row input:focus { border-color:var(--accent); background:#fff; }
-    .input-row input::placeholder { color:var(--text-light); }
-    .input-row input:disabled { opacity:0.5; }
+  .theme-toggle {
+    width: 36px; height: 36px; border-radius: 10px; border: 1.5px solid var(--line);
+    background: var(--surface-2); cursor: pointer; display: flex; align-items: center;
+    justify-content: center; transition: border-color 0.15s;
+  }
+  .theme-toggle:hover { border-color: var(--gold); }
+  .theme-toggle svg { width: 17px; height: 17px; stroke: var(--ink-mid); }
 
-    .send-btn {
-      width:40px; height:40px; border-radius:11px;
-      background:var(--accent); border:none; cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-      transition:background 0.15s; flex-shrink:0;
-    }
-    .send-btn:hover { background:var(--accent-hover); }
-    .send-btn:disabled { opacity:0.4; cursor:not-allowed; }
-    .send-btn svg { stroke:#fff; }
+  .user-pill {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; color: var(--gold-strong);
+    background: var(--gold-tint); padding: 6px 12px; border-radius: 20px; display: none;
+  }
 
-    .status-bar { font-size:12px; color:var(--danger); min-height:15px; }
-    .status-bar.ok { color:var(--success); }
+  .btn {
+    padding: 8px 18px; border-radius: 10px; font-family: inherit; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all 0.15s ease; border: none;
+  }
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  html[data-theme="dark"] .btn-primary { background: var(--gold); color: #17120A; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-outline { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold-strong); }
+  .btn-danger { background: var(--danger-tint); color: var(--danger); border: 1.5px solid var(--danger); }
+  .btn-danger:hover { opacity: 0.85; }
+  .btn-sm { padding: 7px 14px; font-size: 12.5px; }
 
-    /* History panel inside chat */
-    .history-panel {
-      flex:1; background:#f9fafb;
-      padding:20px; display:none; flex-direction:column; gap:12px;
-      overflow-y:auto; max-height:420px;
-    }
-    .history-panel.active { display:flex; }
-    .history-panel h3 { font-size:15px; font-weight:700; color:var(--text-dark); margin-bottom:4px; }
-    .history-item {
-      background:#fff; border-radius:12px; padding:12px 14px;
-      border:1px solid var(--border); display:flex; flex-direction:column; gap:5px;
-    }
-    .history-q { font-size:13px; font-weight:600; color:var(--text-dark); }
-    .history-a { font-size:12.5px; color:var(--text-mid); line-height:1.5; }
-    .history-empty { font-size:13px; color:var(--text-light); text-align:center; padding:40px 0; }
+  /* Body row */
+  .body-row { flex: 1; min-height: 0; display: flex; }
 
-    .back-btn {
-      background:none; border:none; cursor:pointer;
-      font-family:inherit; font-size:13px; font-weight:600;
-      color:var(--accent); padding:0; display:flex; align-items:center; gap:5px;
-    }
-    .back-btn:hover { color:var(--accent-hover); }
+  /* Sidebar */
+  .sidebar {
+    width: 232px; flex-shrink: 0; border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; padding: 20px 16px; gap: 6px;
+    background: var(--surface-2); overflow-y: auto;
+  }
+  .sidebar-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.9px;
+    text-transform: uppercase; color: var(--ink-faint); padding: 0 6px; margin: 10px 0 6px;
+  }
+  .sidebar-label:first-child { margin-top: 0; }
 
-    .history-header {
-      display:flex; align-items:center; justify-content:space-between;
-    }
-    .clear-history-btn {
-      padding:6px 13px; border-radius:8px;
-      background:#fef2f2; color:var(--danger);
-      border:1.5px solid #fecaca;
-      font-family:inherit; font-size:12px; font-weight:600;
-      cursor:pointer; transition:all 0.15s;
-      display:flex; align-items:center; gap:4px;
-    }
-    .clear-history-btn:hover { background:#fee2e2; }
-    .clear-history-btn:disabled { opacity:0.4; cursor:not-allowed; }
-  </style>
+  .tool-btn {
+    width: 100%; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 12px;
+    background: var(--surface); font-family: inherit; font-size: 13px; font-weight: 500;
+    color: var(--ink-mid); cursor: pointer; transition: all 0.15s; text-align: left;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .tool-btn .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .tool-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold-strong); }
+  .tool-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .example-btn {
+    width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px dashed var(--line);
+    background: transparent; font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--ink-faint); cursor: pointer; text-align: left; line-height: 1.5; transition: all 0.15s;
+  }
+  .example-btn:hover:not(:disabled) { border-color: var(--indigo); color: var(--indigo); }
+  .example-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .sidebar-spacer { flex: 1; }
+
+  .history-btn {
+    width: 100%; padding: 12px 14px; background: var(--ink); color: var(--bg); border: none;
+    border-radius: 12px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px;
+  }
+  html[data-theme="dark"] .history-btn { background: var(--gold); color: #17120A; }
+  .history-btn:hover:not(:disabled) { opacity: 0.85; }
+  .history-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Chat panel */
+  .chat-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+  .auth-wall {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; text-align: center; padding: 24px; background: var(--bg);
+  }
+  .auth-wall .mark {
+    width: 56px; height: 56px; border-radius: 16px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-strong));
+    display: flex; align-items: center; justify-content: center; font-size: 24px;
+  }
+  .auth-wall h2 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px; color: var(--ink); }
+  .auth-wall p { color: var(--ink-mid); font-size: 14px; max-width: 340px; line-height: 1.6; }
+
+  .chat-area {
+    flex: 1; background: var(--bg); padding: 24px 28px 12px; display: none;
+    flex-direction: column; gap: 18px; overflow-y: auto;
+  }
+  .chat-area.active { display: flex; }
+  .welcome-row { max-width: 520px; }
+  .welcome-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .welcome-sub { font-size: 13.5px; color: var(--ink-mid); line-height: 1.6; }
+
+  .bubble-row { display: flex; flex-direction: column; max-width: 78%; animation: fadeUp 0.25s ease; }
+  .bubble-row.user { align-self: flex-end; align-items: flex-end; }
+  .bubble-row.ai { align-self: flex-start; align-items: flex-start; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .bubble-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--ink-faint); letter-spacing: 0.4px; margin-bottom: 4px; padding: 0 4px; text-transform: uppercase; }
+
+  .bubble {
+    padding: 12px 16px; border-radius: var(--radius); font-size: 14px; line-height: 1.65;
+    box-shadow: var(--shadow); white-space: pre-wrap;
+  }
+  .user .bubble { background: var(--user-bubble); color: var(--user-ink); border-bottom-right-radius: 4px; }
+  .ai .bubble { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+
+  /* Agent trail */
+  .trail {
+    display: flex; align-items: center; gap: 5px; margin-top: 7px; padding: 0 4px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--ink-faint);
+    flex-wrap: wrap;
+  }
+  .trail-step { display: flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; border: 1px solid var(--line); }
+  .trail-step .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .trail-arrow { color: var(--ink-faint); font-size: 10px; }
+  .trail-step.calculator { border-color: var(--gold); color: var(--gold-strong); }
+  .trail-step.calculator .dot { background: var(--gold); }
+  .trail-step.retrieve { border-color: var(--teal); color: var(--teal); }
+  .trail-step.retrieve .dot { background: var(--teal); }
+  .trail-step.planning { border-color: var(--indigo); color: var(--indigo); }
+  .trail-step.planning .dot { background: var(--indigo); }
+  .trail-step.neutral .dot { background: var(--ink-faint); }
+  .trail-toggle { cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+
+  .reasoning-panel {
+    margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2);
+    border: 1px solid var(--line); font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--ink-mid); display: none; max-width: 100%; overflow-x: auto;
+  }
+  .reasoning-panel.open { display: block; }
+  .reasoning-panel div { padding: 2px 0; }
+  .reasoning-panel b { color: var(--ink); }
+
+  .typing-bubble { display: flex; gap: 5px; padding: 13px 16px; }
+  .typing-bubble span { width: 6px; height: 6px; background: var(--ink-mid); border-radius: 50%; animation: bounce 1.2s infinite; }
+  .typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,80%,100% { transform: translateY(0); opacity: .4; } 40% { transform: translateY(-5px); opacity: 1; } }
+
+  /* Input bar */
+  .input-bar { padding: 14px 24px 18px; border-top: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 10px; }
+  .quick-btns { display: flex; gap: 7px; flex-wrap: wrap; }
+  .quick-btn {
+    padding: 6px 13px; border: 1.5px solid var(--line); border-radius: 20px; background: transparent;
+    font-family: inherit; font-size: 12px; color: var(--ink-mid); cursor: pointer; transition: all 0.15s; font-weight: 500;
+  }
+  .quick-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold-strong); }
+  .quick-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .input-row { display: flex; gap: 10px; align-items: center; }
+  .input-row input {
+    flex: 1; padding: 12px 16px; border: 1.5px solid var(--line); border-radius: 12px;
+    font-family: inherit; font-size: 14px; color: var(--ink); outline: none; transition: border-color 0.15s;
+    background: var(--surface-2);
+  }
+  .input-row input:focus { border-color: var(--gold); }
+  .input-row input::placeholder { color: var(--ink-faint); }
+  .input-row input:disabled { opacity: 0.5; }
+
+  .send-btn {
+    width: 42px; height: 42px; border-radius: 11px; background: var(--ink); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: opacity 0.15s; flex-shrink: 0;
+  }
+  html[data-theme="dark"] .send-btn { background: var(--gold); }
+  .send-btn:hover:not(:disabled) { opacity: 0.85; }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .send-btn svg { stroke: var(--bg); }
+  html[data-theme="dark"] .send-btn svg { stroke: #17120A; }
+
+  .status-bar { font-size: 12px; color: var(--danger); min-height: 15px; }
+  .status-bar.ok { color: var(--teal); }
+
+  /* History panel */
+  .history-panel { flex: 1; background: var(--bg); padding: 24px 28px; display: none; flex-direction: column; gap: 12px; overflow-y: auto; }
+  .history-panel.active { display: flex; }
+  .history-header { display: flex; align-items: center; justify-content: space-between; }
+  .history-header h3 { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--ink); }
+  .back-btn { background: none; border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--gold-strong); display: flex; align-items: center; gap: 5px; }
+  .clear-history-btn { padding: 6px 13px; border-radius: 8px; background: var(--danger-tint); color: var(--danger); border: 1.5px solid var(--danger); font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .history-item { background: var(--surface); border-radius: 12px; padding: 13px 15px; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+  .history-q { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .history-a { font-size: 12.5px; color: var(--ink-mid); line-height: 1.55; }
+  .history-empty { font-size: 13px; color: var(--ink-faint); text-align: center; padding: 40px 0; }
+
+  /* Modals */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10, 14, 26, 0.5); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: var(--surface); border-radius: 18px; padding: 32px 30px; width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); animation: popIn 0.18s ease; border: 1px solid var(--line); }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.96) translateY(6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .modal h2 { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; color: var(--ink); margin-bottom: 5px; }
+  .modal p { font-size: 12.5px; color: var(--ink-faint); margin-bottom: 20px; }
+  .modal label { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 600; color: var(--ink-mid); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .modal input {
+    width: 100%; padding: 11px 13px; border: 1.5px solid var(--line); border-radius: 10px; font-family: 'IBM Plex Mono', monospace;
+    font-size: 13.5px; color: var(--ink); outline: none; margin-bottom: 15px; background: var(--surface-2); transition: border-color 0.15s;
+  }
+  .modal input:focus { border-color: var(--gold); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 4px; }
+  .modal-msg { font-size: 12px; padding: 8px 12px; border-radius: 8px; margin-bottom: 14px; display: none; }
+  .modal-msg.error { background: var(--danger-tint); color: var(--danger); display: block; }
+  .modal-msg.success { background: var(--teal-tint); color: var(--teal); display: block; }
+  .tool-modal .subtitle { font-size: 12.5px; color: var(--ink-faint); margin-bottom: 18px; margin-top: -3px; }
+  .tool-result { background: var(--gold-tint); border-radius: 10px; padding: 13px 15px; font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; color: var(--gold-strong); margin-top: 4px; display: none; text-align: center; }
+
+  /* Mobile */
+  .menu-toggle { display: none; }
+  @media (max-width: 780px) {
+    .sidebar { position: fixed; left: 0; top: 60px; bottom: 0; z-index: 150; transform: translateX(-100%); transition: transform 0.2s ease; box-shadow: var(--shadow); }
+    .sidebar.open { transform: translateX(0); }
+    .menu-toggle { display: flex; }
+    .bubble-row { max-width: 92%; }
+  }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
 </head>
 <body>
 
@@ -292,15 +335,14 @@
 <div class="modal-overlay" id="loginModal">
   <div class="modal">
     <h2>Welcome back</h2>
-    <p>Login to your Finance AI account</p>
+    <p>Log in to your Finance AI account</p>
     <div class="modal-msg" id="loginMsg"></div>
     <label>Username</label>
     <input type="text" id="loginUsername" placeholder="your_username" autocomplete="username" />
     <label>Password</label>
-    <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"
-           onkeydown="if(event.key==='Enter') submitLogin()" />
+    <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') submitLogin()" />
     <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="submitLogin()">Login</button>
+      <button class="btn btn-primary" style="flex:1" onclick="submitLogin()">Log in</button>
       <button class="btn btn-outline" onclick="closeModal('loginModal')">Cancel</button>
     </div>
   </div>
@@ -315,10 +357,9 @@
     <label>Username</label>
     <input type="text" id="signupUsername" placeholder="choose_a_username" autocomplete="username" />
     <label>Password</label>
-    <input type="password" id="signupPassword" placeholder="••••••••" autocomplete="new-password"
-           onkeydown="if(event.key==='Enter') submitSignup()" />
+    <input type="password" id="signupPassword" placeholder="••••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter') submitSignup()" />
     <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="submitSignup()">Create Account</button>
+      <button class="btn btn-primary" style="flex:1" onclick="submitSignup()">Create account</button>
       <button class="btn btn-outline" onclick="closeModal('signupModal')">Cancel</button>
     </div>
   </div>
@@ -327,14 +368,14 @@
 <!-- EMI MODAL -->
 <div class="modal-overlay" id="emiModal">
   <div class="modal tool-modal">
-    <h2>📊 EMI Calculator</h2>
-    <p class="subtitle">Equated Monthly Instalment</p>
+    <h2>EMI Calculator</h2>
+    <p class="subtitle">Equated monthly instalment</p>
     <div class="modal-msg" id="emiMsg"></div>
     <label>Principal (₹)</label>
     <input type="number" id="emiPrincipal" placeholder="e.g. 500000" />
-    <label>Annual Interest Rate (%)</label>
+    <label>Annual interest rate (%)</label>
     <input type="number" id="emiRate" placeholder="e.g. 8.5" step="0.1" />
-    <label>Tenure (Years)</label>
+    <label>Tenure (years)</label>
     <input type="number" id="emiTime" placeholder="e.g. 5" />
     <div class="modal-actions">
       <button class="btn btn-primary" style="flex:1" onclick="submitTool('emi')">Calculate</button>
@@ -347,14 +388,14 @@
 <!-- SIMPLE INTEREST MODAL -->
 <div class="modal-overlay" id="siModal">
   <div class="modal tool-modal">
-    <h2>💰 Simple Interest</h2>
-    <p class="subtitle">Principal × Rate × Time / 100</p>
+    <h2>Simple Interest</h2>
+    <p class="subtitle">Principal × rate × time / 100</p>
     <div class="modal-msg" id="siMsg"></div>
     <label>Principal (₹)</label>
     <input type="number" id="siPrincipal" placeholder="e.g. 100000" />
-    <label>Annual Rate (%)</label>
+    <label>Annual rate (%)</label>
     <input type="number" id="siRate" placeholder="e.g. 7" step="0.1" />
-    <label>Time (Years)</label>
+    <label>Time (years)</label>
     <input type="number" id="siTime" placeholder="e.g. 3" />
     <div class="modal-actions">
       <button class="btn btn-primary" style="flex:1" onclick="submitTool('si')">Calculate</button>
@@ -367,14 +408,14 @@
 <!-- COMPOUND INTEREST MODAL -->
 <div class="modal-overlay" id="ciModal">
   <div class="modal tool-modal">
-    <h2>📈 Compound Interest</h2>
+    <h2>Compound Interest</h2>
     <p class="subtitle">Growth on principal + accumulated interest</p>
     <div class="modal-msg" id="ciMsg"></div>
     <label>Principal (₹)</label>
     <input type="number" id="ciPrincipal" placeholder="e.g. 100000" />
-    <label>Annual Rate (%)</label>
+    <label>Annual rate (%)</label>
     <input type="number" id="ciRate" placeholder="e.g. 10" step="0.1" />
-    <label>Time (Years)</label>
+    <label>Time (years)</label>
     <input type="number" id="ciTime" placeholder="e.g. 5" />
     <div class="modal-actions">
       <button class="btn btn-primary" style="flex:1" onclick="submitTool('ci')">Calculate</button>
@@ -384,17 +425,27 @@
   </div>
 </div>
 
-<!-- MAIN CARD -->
-<div class="card">
-
+<div class="app-shell">
   <!-- Header -->
   <div class="header">
-    <span class="logo">FINANCE AI</span>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button class="theme-toggle menu-toggle" id="menuToggle" onclick="toggleSidebar()" title="Menu" style="margin-right:2px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="brand">
+        <div class="brand-mark">₹</div>
+        <span class="brand-name">Finance AI</span>
+        <span class="brand-sub">agent</span>
+      </div>
+    </div>
     <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      </button>
       <span class="user-pill" id="userPill"></span>
-      <button class="btn btn-primary btn-sm" id="loginBtn" onclick="openModal('loginModal')">Login</button>
-      <button class="btn btn-outline btn-sm" id="signupBtn" onclick="openModal('signupModal')">Sign Up</button>
-      <button class="btn btn-danger btn-sm" id="logoutBtn" style="display:none" onclick="logout()">Logout</button>
+      <button class="btn btn-primary btn-sm" id="loginBtn" onclick="openModal('loginModal')">Log in</button>
+      <button class="btn btn-outline btn-sm" id="signupBtn" onclick="openModal('signupModal')">Sign up</button>
+      <button class="btn btn-danger btn-sm" id="logoutBtn" style="display:none" onclick="logout()">Log out</button>
     </div>
   </div>
 
@@ -402,65 +453,64 @@
   <div class="body-row">
 
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
       <div class="sidebar-label">Tools</div>
-
       <button class="tool-btn" id="toolEmi" onclick="openModal('emiModal')" disabled>
-        <span class="tool-icon">📊</span>EMI Calculator
+        <span class="dot" style="background:var(--gold)"></span>EMI Calculator
       </button>
       <button class="tool-btn" id="toolSi" onclick="openModal('siModal')" disabled>
-        <span class="tool-icon">💰</span>Simple Interest
+        <span class="dot" style="background:var(--gold)"></span>Simple Interest
       </button>
       <button class="tool-btn" id="toolCi" onclick="openModal('ciModal')" disabled>
-        <span class="tool-icon">📈</span>Compound Interest
+        <span class="dot" style="background:var(--gold)"></span>Compound Interest
       </button>
+
+      <div class="sidebar-label">Try the agent</div>
+      <button class="example-btn" onclick="sendQuick('EMI for a loan of 500000 at 8% for 5 years, and is this loan type regulated by RBI?')" disabled>calc + regulation →</button>
+      <button class="example-btn" onclick="sendQuick('Is fixed deposit interest income taxable in India?')" disabled>regulation lookup →</button>
+      <button class="example-btn" onclick="sendQuick('Help me build a plan to save for retirement')" disabled>planning guidance →</button>
 
       <div class="sidebar-spacer"></div>
-
-      <button class="history-btn" id="historyBtn" onclick="toggleHistory()" disabled>
-        🕘 Chat History
-      </button>
+      <button class="history-btn" id="historyBtn" onclick="toggleHistory()" disabled>Chat history</button>
     </div>
 
     <!-- Chat panel -->
     <div class="chat-panel">
 
-      <!-- Auth wall -->
       <div class="auth-wall" id="authWall">
-        <span>🔐</span>
-        <p>Please <strong>login</strong> or <strong>sign up</strong><br>to start chatting with Finance AI.</p>
+        <div class="mark">🔐</div>
+        <h2>Log in to talk to the agent</h2>
+        <p>Finance AI routes each question through a live agent — calculators, regulation lookup, and planning guidance — and shows you exactly which path it took.</p>
       </div>
 
-      <!-- Chat -->
       <div class="chat-area" id="chatArea">
-        <p class="welcome">Hello! I'm Finance AI, your intelligent financial assistant. How can I help you today?</p>
+        <div class="welcome-row">
+          <div class="welcome-title">Hello — I'm Finance AI.</div>
+          <div class="welcome-sub">Ask about an EMI, a regulation, or a plan — or combine them in one question. I'll show you the path I took to answer.</div>
+        </div>
       </div>
 
-      <!-- History panel -->
       <div class="history-panel" id="historyPanel">
         <div class="history-header">
-          <button class="back-btn" onclick="toggleHistory()">← Back to Chat</button>
-          <button class="clear-history-btn" id="clearHistoryBtn" onclick="clearHistory()">🗑 Clear History</button>
+          <button class="back-btn" onclick="toggleHistory()">← Back to chat</button>
+          <button class="clear-history-btn" id="clearHistoryBtn" onclick="clearHistory()">Clear history</button>
         </div>
-        <h3>Chat History</h3>
+        <h3>Chat history</h3>
         <div id="historyList"></div>
       </div>
 
-      <!-- Input bar -->
       <div class="input-bar">
         <div class="quick-btns">
-          <button class="quick-btn" onclick="sendQuick('Budgeting Tips')">Budgeting Tips</button>
-          <button class="quick-btn" onclick="sendQuick('Market Trends')">Market Trends</button>
-          <button class="quick-btn" onclick="sendQuick('Retirement Planning')">Retirement Planning</button>
-          <button class="quick-btn" onclick="sendQuick('Investment Strategies')">Investment Strategies</button>
+          <button class="quick-btn" onclick="sendQuick('Budgeting tips for a monthly salary')">Budgeting tips</button>
+          <button class="quick-btn" onclick="sendQuick('What are current market trends?')">Market trends</button>
+          <button class="quick-btn" onclick="sendQuick('Help me plan for retirement')">Retirement planning</button>
+          <button class="quick-btn" onclick="sendQuick('What investment strategies suit a beginner?')">Investment strategies</button>
         </div>
         <div class="input-row">
-          <input type="text" id="userInput" placeholder="Login to start asking questions..." disabled
-                 onkeydown="if(event.key==='Enter') sendMessage()" />
+          <input type="text" id="userInput" placeholder="Log in to start asking questions..." disabled onkeydown="if(event.key==='Enter') sendMessage()" />
           <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled title="Send">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"/>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
           </button>
         </div>
@@ -469,54 +519,66 @@
 
     </div><!-- /chat-panel -->
   </div><!-- /body-row -->
-</div><!-- /card -->
+</div><!-- /app-shell -->
 
 <script src="config.js"></script>
 <script>
+  // ── Theme ──
+  const sunIcon = '<circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/>';
+  const moonIcon = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('themeIcon').innerHTML = t === 'dark' ? sunIcon : moonIcon;
+    localStorage.setItem('finance_theme', t);
+  }
+  function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+  }
+  applyTheme(localStorage.getItem('finance_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+
+  function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
   // ── State ──
   let token = localStorage.getItem('finance_token') || null;
   let currentUser = localStorage.getItem('finance_user') || null;
   let showingHistory = false;
 
-  // ── DOM refs ──
-  const chatArea   = document.getElementById('chatArea');
-  const authWall   = document.getElementById('authWall');
-  const histPanel  = document.getElementById('historyPanel');
-  const userPill   = document.getElementById('userPill');
-  const loginBtn   = document.getElementById('loginBtn');
-  const signupBtn  = document.getElementById('signupBtn');
-  const logoutBtn  = document.getElementById('logoutBtn');
-  const userInput  = document.getElementById('userInput');
-  const sendBtn    = document.getElementById('sendBtn');
-  const statusBar  = document.getElementById('statusBar');
+  const chatArea = document.getElementById('chatArea');
+  const authWall = document.getElementById('authWall');
+  const histPanel = document.getElementById('historyPanel');
+  const userPill = document.getElementById('userPill');
+  const loginBtn = document.getElementById('loginBtn');
+  const signupBtn = document.getElementById('signupBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const userInput = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const statusBar = document.getElementById('statusBar');
   const historyBtn = document.getElementById('historyBtn');
 
-  // ── Auth state ──
   function renderAuthState() {
     const loggedIn = !!token;
     authWall.style.display = loggedIn ? 'none' : 'flex';
     chatArea.classList.toggle('active', loggedIn && !showingHistory);
     histPanel.classList.toggle('active', loggedIn && showingHistory);
 
-    userPill.style.display  = loggedIn ? 'inline-block' : 'none';
-    userPill.textContent    = loggedIn ? '👤 ' + currentUser : '';
-    loginBtn.style.display  = loggedIn ? 'none' : 'inline-block';
+    userPill.style.display = loggedIn ? 'inline-block' : 'none';
+    userPill.textContent = loggedIn ? currentUser : '';
+    loginBtn.style.display = loggedIn ? 'none' : 'inline-block';
     signupBtn.style.display = loggedIn ? 'none' : 'inline-block';
     logoutBtn.style.display = loggedIn ? 'inline-block' : 'none';
 
-    userInput.disabled    = !loggedIn;
-    sendBtn.disabled      = !loggedIn;
-    historyBtn.disabled   = !loggedIn;
-    userInput.placeholder = loggedIn ? 'Ask me anything about finance...' : 'Login to start asking questions...';
+    userInput.disabled = !loggedIn;
+    sendBtn.disabled = !loggedIn;
+    historyBtn.disabled = !loggedIn;
+    userInput.placeholder = loggedIn ? 'Ask me anything about finance...' : 'Log in to start asking questions...';
 
-    document.querySelectorAll('.quick-btn, .tool-btn').forEach(b => b.disabled = !loggedIn);
+    document.querySelectorAll('.quick-btn, .tool-btn, .example-btn').forEach(b => b.disabled = !loggedIn);
   }
 
-  // ── Modal helpers ──
   function openModal(id) { document.getElementById(id).classList.add('active'); }
   function closeModal(id) {
     document.getElementById(id).classList.remove('active');
-    // clear messages & results
     const msgMap = { loginModal:'loginMsg', signupModal:'signupMsg', emiModal:'emiMsg', siModal:'siMsg', ciModal:'ciMsg' };
     const resMap = { emiModal:'emiResult', siModal:'siResult', ciModal:'ciResult' };
     if (msgMap[id]) { const e = document.getElementById(msgMap[id]); e.className='modal-msg'; e.textContent=''; }
@@ -530,7 +592,6 @@
     o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
   });
 
-  // ── Login ──
   async function submitLogin() {
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
@@ -553,7 +614,6 @@
     } catch { showMsg('loginMsg', 'Server unreachable. Check config.js.', 'error'); }
   }
 
-  // ── Signup ──
   async function submitSignup() {
     const username = document.getElementById('signupUsername').value.trim();
     const password = document.getElementById('signupPassword').value;
@@ -566,16 +626,15 @@
       );
       const data = await res.json();
       if (!res.ok) { showMsg('signupMsg', data.detail || 'Signup failed.', 'error'); return; }
-      showMsg('signupMsg', '✅ Account created! Redirecting to login…', 'success');
+      showMsg('signupMsg', 'Account created. Redirecting to login…', 'success');
       setTimeout(() => {
         closeModal('signupModal');
         document.getElementById('loginUsername').value = username;
         openModal('loginModal');
-      }, 1200);
+      }, 1100);
     } catch { showMsg('signupMsg', 'Server unreachable. Check config.js.', 'error'); }
   }
 
-  // ── Logout ──
   function logout() {
     token = null; currentUser = null; showingHistory = false;
     localStorage.removeItem('finance_token');
@@ -583,12 +642,10 @@
     renderAuthState(); setStatus('');
   }
 
-  // ── Finance Tools ──
-  // Maps tool id → { endpoint, inputs, resultKey, label }
   const toolConfig = {
-    emi: { endpoint: '/tools/emi',               inputs: ['emiPrincipal','emiRate','emiTime'], resultKey: 'emi',      msgEl: 'emiMsg', resultEl: 'emiResult', label: 'EMI' },
-    si:  { endpoint: '/tools/simple-interest',   inputs: ['siPrincipal','siRate','siTime'],   resultKey: 'interest', msgEl: 'siMsg',  resultEl: 'siResult',  label: 'Simple Interest' },
-    ci:  { endpoint: '/tools/compound-interest', inputs: ['ciPrincipal','ciRate','ciTime'],   resultKey: 'interest', msgEl: 'ciMsg',  resultEl: 'ciResult',  label: 'Compound Interest' },
+    emi: { endpoint: '/tools/emi', inputs: ['emiPrincipal','emiRate','emiTime'], resultKey: 'emi', msgEl: 'emiMsg', resultEl: 'emiResult', label: 'EMI' },
+    si:  { endpoint: '/tools/simple-interest', inputs: ['siPrincipal','siRate','siTime'], resultKey: 'interest', msgEl: 'siMsg', resultEl: 'siResult', label: 'Simple Interest' },
+    ci:  { endpoint: '/tools/compound-interest', inputs: ['ciPrincipal','ciRate','ciTime'], resultKey: 'interest', msgEl: 'ciMsg', resultEl: 'ciResult', label: 'Compound Interest' },
   };
 
   async function submitTool(tool) {
@@ -610,13 +667,11 @@
       const resultEl = document.getElementById(cfg.resultEl);
       resultEl.textContent = `${cfg.label}: ₹${Number(val).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
       resultEl.style.display = 'block';
-      // clear msg
       const msgEl = document.getElementById(cfg.msgEl);
       msgEl.className = 'modal-msg'; msgEl.textContent = '';
     } catch { showMsg(cfg.msgEl, 'Server error. Try again.', 'error'); }
   }
 
-  // ── Chat History ──
   async function toggleHistory() {
     if (!token) return;
     showingHistory = !showingHistory;
@@ -624,12 +679,10 @@
     histPanel.classList.toggle('active', showingHistory);
 
     if (showingHistory) {
-      historyBtn.textContent = '💬 Back to Chat';
+      historyBtn.textContent = 'Back to chat';
       document.getElementById('historyList').innerHTML = '<p class="history-empty">Loading…</p>';
       try {
-        const res = await fetch(`${API_BASE_URL}/history`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const res = await fetch(`${API_BASE_URL}/history`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (res.status === 401) { logout(); return; }
         const data = await res.json();
         const list = data.history || [];
@@ -639,66 +692,107 @@
         } else {
           el.innerHTML = list.map(item => `
             <div class="history-item">
-              <div class="history-q">🙋 ${item.query || item.question || item.user || ''}</div>
-              <div class="history-a">🤖 ${item.answer || item.response || item.ai || ''}</div>
+              <div class="history-q">${item.query || item.question || item.user || ''}</div>
+              <div class="history-a">${item.answer || item.response || item.ai || ''}</div>
             </div>`).join('');
         }
       } catch {
         document.getElementById('historyList').innerHTML = '<p class="history-empty">Could not load history.</p>';
       }
     } else {
-      historyBtn.textContent = '🕘 Chat History';
+      historyBtn.textContent = 'Chat history';
     }
   }
 
-  // ── Clear History ──
   async function clearHistory() {
     if (!token) return;
     const btn = document.getElementById('clearHistoryBtn');
-    btn.disabled = true;
-    btn.textContent = 'Clearing…';
+    btn.disabled = true; btn.textContent = 'Clearing…';
     try {
-      const res = await fetch(`${API_BASE_URL}/clear-session`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch(`${API_BASE_URL}/clear-session`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
       if (res.status === 401) { logout(); return; }
-      // Refresh list
-      document.getElementById('historyList').innerHTML = '<p class="history-empty">History cleared successfully.</p>';
+      document.getElementById('historyList').innerHTML = '<p class="history-empty">History cleared.</p>';
     } catch {
       document.getElementById('historyList').innerHTML = '<p class="history-empty">Could not clear history. Try again.</p>';
     } finally {
-      btn.disabled = false;
-      btn.innerHTML = '🗑 Clear History';
+      btn.disabled = false; btn.textContent = 'Clear history';
     }
   }
 
-  // ── Chat ──
   function setStatus(msg, ok = false) {
     statusBar.textContent = msg;
     statusBar.className = 'status-bar' + (ok ? ' ok' : '');
   }
 
-  function addBubble(text, role, meta) {
+  function addBubble(text, role) {
     const row = document.createElement('div');
     row.className = `bubble-row ${role}`;
-    const avatar = document.createElement('div');
-    avatar.className = 'avatar';
-    avatar.textContent = role === 'user' ? '👤' : '🤖';
-    const wrap = document.createElement('div');
+    const label = document.createElement('div');
+    label.className = 'bubble-label';
+    label.textContent = role === 'user' ? 'you' : 'finance ai';
     const bubble = document.createElement('div');
     bubble.className = 'bubble'; bubble.textContent = text;
-    wrap.appendChild(bubble);
-    if (meta) { const m = document.createElement('div'); m.className='meta'; m.textContent=meta; wrap.appendChild(m); }
-    role === 'user' ? (row.appendChild(avatar), row.appendChild(wrap)) : (row.appendChild(wrap), row.appendChild(avatar));
+    row.appendChild(label); row.appendChild(bubble);
     chatArea.appendChild(row);
     chatArea.scrollTop = chatArea.scrollHeight;
+    return row;
+  }
+
+  // ── Agent trail rendering ──
+  // Maps the backend's `used_tool` value to the sequence of graph nodes visited,
+  // so the UI shows the real LangGraph routing decision, not a generic "thinking" label.
+  const TRAIL_STEPS = {
+    'calculator':        [{c:'neutral', l:'query'}, {c:'calculator', l:'calculator'}, {c:'neutral', l:'answer'}],
+    'rag':               [{c:'neutral', l:'query'}, {c:'neutral', l:'classify'}, {c:'retrieve', l:'retrieve'}, {c:'neutral', l:'answer'}],
+    'calculator+rag':    [{c:'neutral', l:'query'}, {c:'calculator', l:'calculator'}, {c:'retrieve', l:'retrieve'}, {c:'neutral', l:'answer'}],
+    'planning':          [{c:'neutral', l:'query'}, {c:'neutral', l:'classify'}, {c:'planning', l:'planning'}, {c:'neutral', l:'answer'}],
+  };
+
+  function renderTrail(row, data) {
+    const steps = TRAIL_STEPS[data.used_tool];
+    if (!steps) return;
+
+    const trail = document.createElement('div');
+    trail.className = 'trail';
+    steps.forEach((s, i) => {
+      if (i > 0) {
+        const arrow = document.createElement('span');
+        arrow.className = 'trail-arrow'; arrow.textContent = '→';
+        trail.appendChild(arrow);
+      }
+      const step = document.createElement('span');
+      step.className = `trail-step ${s.c}`;
+      step.innerHTML = `<span class="dot"></span>${s.l}`;
+      trail.appendChild(step);
+    });
+
+    const hasDetail = data.calc_type || data.tool_result || data.intent;
+    if (hasDetail) {
+      const toggle = document.createElement('span');
+      toggle.className = 'trail-toggle';
+      toggle.textContent = 'details';
+      trail.appendChild(toggle);
+
+      const panel = document.createElement('div');
+      panel.className = 'reasoning-panel';
+      let html = '';
+      if (data.intent) html += `<div><b>intent:</b> ${data.intent}</div>`;
+      if (data.calc_type) html += `<div><b>calc_type:</b> ${data.calc_type}</div>`;
+      if (data.calc_params) html += `<div><b>params:</b> ${JSON.stringify(data.calc_params)}</div>`;
+      if (data.tool_result && data.tool_result.result !== undefined) html += `<div><b>result:</b> ${data.tool_result.result}</div>`;
+      panel.innerHTML = html;
+      toggle.addEventListener('click', () => panel.classList.toggle('open'));
+      row.appendChild(trail);
+      row.appendChild(panel);
+    } else {
+      row.appendChild(trail);
+    }
   }
 
   function addTyping() {
     const row = document.createElement('div');
     row.className = 'bubble-row ai'; row.id = 'typing';
-    row.innerHTML = `<div class="bubble typing"><span></span><span></span><span></span></div><div class="avatar">🤖</div>`;
+    row.innerHTML = `<div class="bubble typing-bubble"><span></span><span></span><span></span></div>`;
     chatArea.appendChild(row);
     chatArea.scrollTop = chatArea.scrollHeight;
   }
@@ -706,8 +800,7 @@
 
   async function sendMessage(text) {
     if (!token) return;
-    // If history is showing, go back to chat first
-    if (showingHistory) { showingHistory=false; renderAuthState(); historyBtn.textContent='🕘 Chat History'; }
+    if (showingHistory) { showingHistory = false; renderAuthState(); historyBtn.textContent = 'Chat history'; }
     const message = (text || userInput.value).trim();
     if (!message) return;
     userInput.value = ''; setStatus('');
@@ -721,14 +814,14 @@
         body: JSON.stringify({ query: message })
       });
       removeTyping();
-      if (res.status === 401) { logout(); setStatus('Session expired. Please login again.'); return; }
+      if (res.status === 401) { logout(); setStatus('Session expired. Please log in again.'); return; }
       const data = await res.json();
       if (data.error) { setStatus('Error: ' + (data.details || data.error)); return; }
-      const meta = data.intent ? `Intent: ${data.intent}  ·  ${data.response_time}s` : null;
-      addBubble(data.response, 'ai', meta);
+      const row = addBubble(data.response, 'ai');
+      renderTrail(row, data);
     } catch {
       removeTyping();
-      setStatus(`⚠ Cannot reach server. Is FastAPI running?`);
+      setStatus('Cannot reach server. Is FastAPI running?');
     } finally {
       userInput.disabled = false; sendBtn.disabled = false; userInput.focus();
     }
@@ -736,7 +829,6 @@
 
   function sendQuick(text) { if (token) sendMessage(text); }
 
-  // ── Init ──
   renderAuthState();
 </script>
 </body>
