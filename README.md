@@ -1,475 +1,158 @@
-# 💰 FinanceAI – AI-Powered Financial Assistant
+# FinanceAI — your financial co-pilot, with receipts
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.13-blue?style=for-the-badge&logo=python">
-  <img src="https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi">
-  <img src="https://img.shields.io/badge/LangChain-Framework-green?style=for-the-badge">
-  <img src="https://img.shields.io/badge/RAG-Retrieval%20Augmented%20Generation-orange?style=for-the-badge">
-  <img src="https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react">
-  <img src="https://img.shields.io/badge/License-MIT-success?style=for-the-badge">
-</p>
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Groq](https://img.shields.io/badge/LLM-Groq-F55036?logo=groq&logoColor=white)](https://groq.com/)
+[![Netlify](https://img.shields.io/badge/Deployment-Netlify-00C7B7?logo=netlify&logoColor=white)](https://app.netlify.com/projects/clinquant-kringle-78de32/agent-runs/6a6b440e3bf81a436a4d19a4)
 
-<p align="center">
-An AI-powered financial assistant that leverages <b>Large Language Models (LLMs)</b>, <b>Retrieval-Augmented Generation (RAG)</b>, and <b>semantic search</b> to answer financial questions using your own documents.
-</p>
+FinanceAI is a focused financial assistant that routes a question through the right tool instead of treating every request like ordinary chat. Calculate an EMI, ask about regulations, plan a budget, or combine them in one prompt—and see the route used to create the answer.
 
----
+> **Live deployment:** Managed with [Netlify](https://app.netlify.com/projects/clinquant-kringle-78de32/agent-runs/6a6b440e3bf81a436a4d19a4). Add the public `*.netlify.app` URL here when it is available.
 
-# 🌐 Live Demo
+## Explore
 
-### 🚀 Frontend
+- [What makes it different](#what-makes-it-different)
+- [Try these prompts](#try-these-prompts)
+- [How the agent thinks](#how-the-agent-thinks)
+- [Features](#features)
+- [Run it locally](#run-it-locally)
+- [API quick reference](#api-quick-reference)
+- [Project map](#project-map)
+- [Important notes](#important-notes)
 
-**https://agent-6a6b440e3bf81a43--clinquant-kringle-78de32.netlify.app/**
+## What makes it different
 
----
+Most chatbots produce an answer in one step. FinanceAI uses a small routing graph to choose an appropriate path:
 
-# 📖 Overview
+- **Deterministic calculators** handle EMI, simple interest, and compound interest—no LLM arithmetic guesswork.
+- **Regulation-aware answers** can retrieve relevant passages from the local financial knowledge base.
+- **Planning guidance** uses Groq for clear, structured next steps without stock-price predictions.
+- **Combined questions work.** Ask for an EMI calculation *and* an RBI-related explanation in the same message; the agent can calculate first, retrieve context second, and then synthesize one answer.
+- **The interface is built for exploration:** authentication, calculator modals, chat history, a light/dark theme, and an optional debug route for inspecting the agent state.
 
-FinanceAI is an intelligent financial assistant designed to simplify financial information retrieval.
+## Try these prompts
 
-Instead of relying only on an LLM, FinanceAI uses **Retrieval-Augmented Generation (RAG)** to retrieve relevant information from uploaded financial documents before generating responses.
+After creating an account, copy one of these into the chat:
 
-Users can:
+| Goal | Prompt to try |
+| --- | --- |
+| Calculate a loan payment | `Calculate the EMI for a ₹500,000 loan at 8% for 5 years.` |
+| Compare interest growth | `What is the compound interest on ₹100,000 at 7% for 3 years?` |
+| Build a saving habit | `I earn ₹60,000 monthly. Help me create a practical budget and emergency-fund plan.` |
+| Mix tools and research | `Calculate EMI for ₹500,000 at 8% for 5 years, and explain whether this kind of lending is regulated by RBI.` |
+| Explore a regulation | `What do the knowledge-base documents say about digital lending safeguards?` |
 
-- 💬 Ask financial questions
-- 📄 Upload financial documents
-- 🔍 Perform semantic search
-- 🤖 Get AI-generated responses
-- 📚 Build a searchable knowledge base
+## How the agent thinks
 
----
-
-# ✨ Features
-
-## 🤖 AI Financial Assistant
-
-Ask questions in natural language.
-
-Example:
-
-> What is GST?
-
----
-
-## 📄 Document Upload
-
-Upload PDFs and financial documents.
-
-The documents are indexed into a vector database.
-
----
-
-## 🔍 Semantic Search
-
-Instead of keyword matching, FinanceAI understands meaning using embeddings.
-
----
-
-## 🧠 Retrieval-Augmented Generation (RAG)
-
-The system retrieves relevant document chunks before asking the LLM.
-
-This reduces hallucinations and improves answer quality.
-
----
-
-## 💬 Conversational Chat
-
-Maintain conversation history while interacting with the assistant.
-
----
-
-## 📚 Knowledge Base
-
-Store and search financial documents efficiently.
-
----
-
-## ⚡ FastAPI Backend
-
-REST APIs built with FastAPI.
-
----
-
-## 🎨 Modern Responsive UI
-
-Clean interface built using React.
-
----
-
-# 🏗️ System Architecture
-
-```
-                    User
-                      │
-                      ▼
-              React Frontend
-                      │
-          REST API Requests
-                      │
-                      ▼
-               FastAPI Backend
-                      │
-              LangChain Pipeline
-                      │
-         Retrieval-Augmented Generation
-                      │
-      ┌───────────────┴───────────────┐
-      │                               │
-      ▼                               ▼
- Vector Database                 Large Language Model
- (Embeddings)                   (Groq / Gemini)
-      │                               │
-      └───────────────┬───────────────┘
-                      ▼
-              AI Generated Response
+```mermaid
+flowchart TD
+    Q[Your financial question] --> A[Analyse query]
+    A -->|Calculation found| C[Verified calculator]
+    A -->|No calculation| I[Classify intent]
+    C -->|Also regulation-related| R[Retrieve finance context]
+    C -->|Calculation only| S[Groq synthesis]
+    I -->|Regulation or general| R
+    I -->|Planning| S
+    R --> S
+    S --> O[Clear, contextual answer]
 ```
 
----
+## Features
 
-# ⚙️ Tech Stack
+| Area | Included |
+| --- | --- |
+| AI | Groq-powered financial planning and explanation layer |
+| Agent routing | LangGraph workflow for calculation, retrieval, and synthesis |
+| Financial tools | EMI, simple-interest, and compound-interest calculators |
+| Knowledge base | Local PDFs plus a FAISS vector index for financial and regulatory context |
+| Accounts | Signup/login with bcrypt password hashing and JWT bearer authentication |
+| Memory | Per-user in-memory chat history with a clear-history action |
+| Frontend | Responsive single-page interface, theme switcher, quick prompts, and calculator panels |
+| Diagnostics | `/ask-debug` exposes the selected agent path and tool data for demos and development |
 
-## Frontend
+## Run it locally
 
-- React.js
-- HTML5
-- CSS3
-- JavaScript
+### 1. Prerequisites
 
----
+- Python 3.11 or newer
+- A [Groq API key](https://console.groq.com/keys)
 
-## Backend
+### 2. Configure and start
 
-- Python
-- FastAPI
-- LangChain
-
----
-
-## AI
-
-- Groq LLM
-- Google Gemini
-- HuggingFace Embeddings
-
----
-
-## Database
-
-- SQLite
-
----
-
-## Deployment
-
-- Netlify
-- Render / Local Backend
-
----
-
-# 📂 Project Structure
-
-```
-FinanceAI
-│
-├── Backend
-│   ├── app
-│   ├── finance_env
-│   ├── knowledge_base
-│   ├── logs
-│   ├── scripts
-│   ├── .env
-│   ├── requirements.txt
-│   └── users.db
-│
-├── frontend
-│
-├── README.md
-│
-└── .gitignore
-```
-
----
-
-# 🚀 Installation
-
-## Clone Repository
-
-```bash
-git clone https://github.com/dnyanesshwari/FinanceAI.git
-
-cd FinanceAI
-```
-
----
-
-## Create Virtual Environment
-
-```bash
+```powershell
 cd Backend
-
-python -m venv finance_env
-```
-
-Activate
-
-### Windows
-
-```bash
-finance_env\Scripts\activate
-```
-
-### Linux / macOS
-
-```bash
-source finance_env/bin/activate
-```
-
----
-
-## Install Dependencies
-
-```bash
+py -m venv finance_env
+.\finance_env\Scripts\Activate.ps1
 pip install -r requirements.txt
+Copy-Item .env.example .env
 ```
 
----
-
-# 🔑 Environment Variables
-
-Create a `.env` file inside Backend.
-
-Example:
+Add your key to `Backend/.env`:
 
 ```env
-GROQ_API_KEY=<YOUR_GROQ_API_KEY>
-
-GOOGLE_API_KEY=<YOUR_GEMINI_API_KEY>
-
-SECRET_KEY=your_secret_key
+GROQ_API_KEY=your_groq_api_key
+# Optional; this is the default model
+GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
----
+Then start the application:
 
-# ▶️ Run Backend
-
-```bash
-uvicorn app.main:app --reload
+```powershell
+uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-or
+Visit **http://localhost:8000** and create an account to start chatting.
 
-```bash
-python app.py
+<details>
+<summary><strong>Using a separately hosted frontend?</strong></summary>
+
+Set `API_BASE_URL` in `frontend/config.js` to the public URL of your FastAPI backend. The frontend is also served by the backend when running locally.
+
+</details>
+
+## API quick reference
+
+| Method | Endpoint | Purpose | Auth |
+| --- | --- | --- | --- |
+| `GET` | `/health` | Lightweight service check | No |
+| `POST` | `/signup` | Create an account | No |
+| `POST` | `/login` | Receive a bearer token | No |
+| `POST` | `/ask` | Ask FinanceAI a question | Yes |
+| `POST` | `/ask-debug` | Inspect the agent route and tool output | Yes |
+| `POST` | `/tools/emi` | Calculate an EMI | Yes |
+| `POST` | `/tools/simple-interest` | Calculate simple interest | Yes |
+| `POST` | `/tools/compound-interest` | Calculate compound interest | Yes |
+| `GET` | `/history` | Read your chat history | Yes |
+| `POST` | `/clear-session` | Clear your chat history | Yes |
+
+Interactive API documentation is available at **http://localhost:8000/docs** while the backend is running.
+
+## Project map
+
+```text
+FinanceAI/
+├── frontend/                 # Single-page chat experience
+├── Backend/
+│   ├── app/
+│   │   ├── agent/            # LangGraph routing, tools, and state
+│   │   ├── auth/             # JWT and password helpers
+│   │   ├── rag/              # Embeddings, FAISS, and retrieval
+│   │   ├── services/         # Groq, memory, intent, calculator services
+│   │   └── main.py           # FastAPI routes and frontend serving
+│   ├── knowledge_base/       # Finance and regulation source documents
+│   ├── finance_index/        # Prebuilt FAISS index
+│   ├── .env.example          # Safe configuration template
+│   └── requirements.txt
+└── README.md
 ```
 
----
+## Important notes
 
-# ▶️ Run Frontend
-
-```bash
-cd frontend
-
-npm install
-
-npm run dev
-```
+- FinanceAI is an educational assistant, **not** a substitute for a licensed financial adviser, tax professional, or legal counsel.
+- Never commit `Backend/.env`; it contains your Groq credential.
+- Chat history is currently stored in memory, so it resets when the backend restarts.
+- The first RAG request may need to download the `all-MiniLM-L6-v2` embedding model. If it is unavailable, the app continues to serve calculator and Groq-powered planning responses.
 
 ---
 
-# 📸 Screenshots
-
-## 🏠 Home Page
-
-(Add Screenshot)
-
----
-
-## 💬 Chat Interface
-
-(Add Screenshot)
-
----
-
-## 📄 Upload Documents
-
-(Add Screenshot)
-
----
-
-## 📚 Knowledge Base
-
-(Add Screenshot)
-
----
-
-## 📱 Mobile View
-
-(Add Screenshot)
-
----
-
-# 💡 Example Questions
-
-```
-What is GST?
-
-Explain balance sheet.
-
-Summarize this PDF.
-
-What are startup tax benefits?
-
-Explain income tax slabs.
-
-Difference between assets and liabilities.
-
-What is depreciation?
-
-Generate financial insights from this report.
-```
-
----
-
-# 🔄 Workflow
-
-```
-User Question
-
-        │
-
-        ▼
-
-React Frontend
-
-        │
-
-        ▼
-
-FastAPI Backend
-
-        │
-
-        ▼
-
-Generate Embeddings
-
-        │
-
-        ▼
-
-Retrieve Relevant Chunks
-
-        │
-
-        ▼
-
-Send Context to LLM
-
-        │
-
-        ▼
-
-Generate Answer
-
-        │
-
-        ▼
-
-Return Response
-```
-
----
-
-# 📈 Future Improvements
-
-- Voice Assistant
-- OCR Support
-- Financial Report Analysis
-- Portfolio Insights
-- Investment Recommendation
-- Multilingual Support
-- Authentication & User Profiles
-- PostgreSQL Integration
-- Docker Deployment
-- Cloud Deployment
-- Admin Dashboard
-
----
-
-# 📊 Tech Highlights
-
-- ✅ FastAPI REST APIs
-- ✅ LangChain Integration
-- ✅ Retrieval-Augmented Generation
-- ✅ Vector Search
-- ✅ LLM Integration
-- ✅ React Frontend
-- ✅ Financial Document QA
-- ✅ Semantic Search
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome.
-
-1. Fork the repository
-
-2. Create a new branch
-
-```
-git checkout -b feature-name
-```
-
-3. Commit changes
-
-```
-git commit -m "Added feature"
-```
-
-4. Push
-
-```
-git push origin feature-name
-```
-
-5. Create a Pull Request
-
----
-
-# 🛡️ License
-
-This project is licensed under the MIT License.
-
----
-
-# 👩‍💻 Author
-
-## Dnyaneshwari Pawar
-
-🎓 B.Tech CSE (AI & ML)
-
-💼 AI / ML Engineer
-
-🔗 GitHub
-
-https://github.com/dnyanesshwari
-
----
-
-# ⭐ Support
-
-If you found this project helpful,
-
-⭐ Star the repository
-
-🍴 Fork the project
-
-💬 Share your feedback
-
----
-
-<p align="center">
-Made with ❤️ using Python, FastAPI, LangChain, RAG & Large Language Models
-</p>
+If FinanceAI helps you explore a decision more clearly, consider starring the repository. ★
