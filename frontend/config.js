@@ -1,1 +1,1 @@
-const API_BASE_URL = "http://localhost:8000";  // ← change this
+const API_BASE_URL = "";  // ← change this
