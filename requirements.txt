@@ -1,15 +1,17 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 fastapi
 uvicorn[standard]
 slowapi
-langchain
 langchain-community
-langchain-ollama
 langchain-groq
+langchain-text-splitters
 langgraph
 faiss-cpu
-openai
-python-dotenv
 sentence-transformers
+torch
+pypdf
+python-dotenv
 pydantic
 bcrypt>=4,<5
 python-jose[cryptography]
