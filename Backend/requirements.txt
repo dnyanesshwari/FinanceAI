@@ -4,7 +4,7 @@ slowapi
 langchain
 langchain-community
 langchain-ollama
-langchain-groq
+langchain-google-genai
 langgraph
 faiss-cpu
 openai

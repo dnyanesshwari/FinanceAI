@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Groq](https://img.shields.io/badge/LLM-Groq-F55036?logo=groq&logoColor=white)](https://groq.com/)
+[![Gemini](https://img.shields.io/badge/LLM-Gemini-4285F4?logo=googlegemini&logoColor=white)](https://ai.google.dev/)
 [![Netlify](https://img.shields.io/badge/Deployment-Netlify-00C7B7?logo=netlify&logoColor=white)](https://app.netlify.com/projects/clinquant-kringle-78de32/agent-runs/6a6b440e3bf81a436a4d19a4)
 
 FinanceAI is a focused financial assistant that routes a question through the right tool instead of treating every request like ordinary chat. Calculate an EMI, ask about regulations, plan a budget, or combine them in one prompt—and see the route used to create the answer.
@@ -28,7 +28,7 @@ Most chatbots produce an answer in one step. FinanceAI uses a small routing grap
 
 - **Deterministic calculators** handle EMI, simple interest, and compound interest—no LLM arithmetic guesswork.
 - **Regulation-aware answers** can retrieve relevant passages from the local financial knowledge base.
-- **Planning guidance** uses Groq for clear, structured next steps without stock-price predictions.
+- **Planning guidance** uses Gemini for clear, structured next steps without stock-price predictions.
 - **Combined questions work.** Ask for an EMI calculation *and* an RBI-related explanation in the same message; the agent can calculate first, retrieve context second, and then synthesize one answer.
 - **The interface is built for exploration:** authentication, calculator modals, chat history, a light/dark theme, and an optional debug route for inspecting the agent state.
 
@@ -52,7 +52,7 @@ flowchart TD
     A -->|Calculation found| C[Verified calculator]
     A -->|No calculation| I[Classify intent]
     C -->|Also regulation-related| R[Retrieve finance context]
-    C -->|Calculation only| S[Groq synthesis]
+    C -->|Calculation only| S[Gemini synthesis]
     I -->|Regulation or general| R
     I -->|Planning| S
     R --> S
@@ -63,7 +63,7 @@ flowchart TD
 
 | Area | Included |
 | --- | --- |
-| AI | Groq-powered financial planning and explanation layer |
+| AI | Gemini-powered financial planning and explanation layer |
 | Agent routing | LangGraph workflow for calculation, retrieval, and synthesis |
 | Financial tools | EMI, simple-interest, and compound-interest calculators |
 | Knowledge base | Local PDFs plus a FAISS vector index for financial and regulatory context |
@@ -77,7 +77,7 @@ flowchart TD
 ### 1. Prerequisites
 
 - Python 3.11 or newer
-- A [Groq API key](https://console.groq.com/keys)
+- A [Gemini API key](https://aistudio.google.com/apikey)
 
 ### 2. Configure and start
 
@@ -92,9 +92,9 @@ Copy-Item .env.example .env
 Add your key to `Backend/.env`:
 
 ```env
-GROQ_API_KEY=your_groq_api_key
+GEMINI_API_KEY=your_gemini_api_key
 # Optional; this is the default model
-GROQ_MODEL=llama-3.3-70b-versatile
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 Then start the application:
@@ -139,7 +139,7 @@ FinanceAI/
 │   │   ├── agent/            # LangGraph routing, tools, and state
 │   │   ├── auth/             # JWT and password helpers
 │   │   ├── rag/              # Embeddings, FAISS, and retrieval
-│   │   ├── services/         # Groq, memory, intent, calculator services
+│   │   ├── services/         # Gemini, memory, intent, calculator services
 │   │   └── main.py           # FastAPI routes and frontend serving
 │   ├── knowledge_base/       # Finance and regulation source documents
 │   ├── finance_index/        # Prebuilt FAISS index
@@ -151,9 +151,9 @@ FinanceAI/
 ## Important notes
 
 - FinanceAI is an educational assistant, **not** a substitute for a licensed financial adviser, tax professional, or legal counsel.
-- Never commit `Backend/.env`; it contains your Groq credential.
+- Never commit `Backend/.env`; it contains your Gemini credential.
 - Chat history is currently stored in memory, so it resets when the backend restarts.
-- The first RAG request may need to download the `all-MiniLM-L6-v2` embedding model. If it is unavailable, the app continues to serve calculator and Groq-powered planning responses.
+- The first RAG request may need to download the `all-MiniLM-L6-v2` embedding model. If it is unavailable, the app continues to serve calculator and Gemini-powered planning responses.
 
 ---
 

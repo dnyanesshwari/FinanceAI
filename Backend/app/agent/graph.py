@@ -166,6 +166,12 @@ Question:
 
 Answer:
 """
+    elif state.get("intent") == "general" and query.strip().lower().rstrip("!. ") in {
+        "hi", "hii", "hiii", "hello", "hey", "good morning", "good afternoon", "good evening"
+    }:
+        answer = "Hi! I can help with EMI and interest calculations, financial regulations, or budgeting and savings plans. What would you like to work on?"
+        used = state.get("used_tool") or state.get("intent")
+        return {**state, "final_answer": answer, "used_tool": used}
     else:
         prompt = f"""
 Previous Conversation:
@@ -203,7 +209,7 @@ def route_after_calculator(state: AgentState) -> str:
 
 
 def route_after_classify(state: AgentState) -> str:
-    return "synthesize" if state.get("intent") == "planning" else "retrieve"
+    return "synthesize" if state.get("intent") in {"planning", "general"} else "retrieve"
 
 
 # ---------------------------------------------------------------------------
